@@ -26,7 +26,10 @@ abstract class OperationDao{
 }
 @Dao
 abstract class MCSDao {
+    @Insert(entity = MonthlyCategorySummaryEntity::class)
+    abstract fun insertMcs(mcs: MonthlyCategorySummaryEntity)
     @Query("SELECT * FROM monthly_category_summary")
     abstract fun getAllMCS(): List<MonthlyCategorySummaryEntity>
+
 }
 

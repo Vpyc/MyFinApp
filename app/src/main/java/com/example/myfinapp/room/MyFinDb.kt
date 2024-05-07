@@ -15,7 +15,6 @@ import androidx.room.TypeConverters
         ],
     version = 1
 )
-@TypeConverters(Converters::class)
 abstract class MyFinDb: RoomDatabase() {
     abstract fun getCardDao(): CardDao
     abstract fun getCategoryDao(): CategoryDao

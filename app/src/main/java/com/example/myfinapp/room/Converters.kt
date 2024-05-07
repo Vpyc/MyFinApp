@@ -1,31 +1,35 @@
 package com.example.myfinapp.room
 
+import android.icu.text.SimpleDateFormat
 import androidx.room.TypeConverter
-import java.time.YearMonth
-import java.util.Calendar
-import java.util.Date
+import java.util.Locale
 
-class Converters {
+class DateConverter {
+    private val dateFormatOperation = SimpleDateFormat("dd.MM.yyyy HH:mm"
+                                        , Locale.getDefault())
     @TypeConverter
-    fun fromDateToYearMonth(date: Date): YearMonth {
-        val calendar = Calendar.getInstance()
-        calendar.time = date
-        return YearMonth.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1)
-    }
-
-    @TypeConverter
-    fun fromYearMonthToDate(yearMonth: YearMonth): Date {
-        val calendar = Calendar.getInstance()
-        calendar.set(yearMonth.year, yearMonth.monthValue - 1, 1)
-        return calendar.time
-    }
-    @TypeConverter
-    fun fromDateToTimestamp(date: Date): Long {
-        return date.time
+    fun fromStringToTimestamp(date: String): Long {
+        val newDate = dateFormatOperation.parse(date)
+        return newDate.time / 1000
     }
 
     @TypeConverter
-    fun fromTimestampToDate(timestamp: Long): Date {
-        return Date(timestamp)
+    fun fromTimestampToString(timestamp: Long): String {
+        return dateFormatOperation.format(timestamp * 1000L)
     }
+}
+class YearMonthConverter{
+    private val dateFormatMCS = SimpleDateFormat("MM.yyyy", Locale.getDefault())
+
+    @TypeConverter
+    fun fromTimestampToMyDate(timestamp: Long): String {
+        return dateFormatMCS.format(timestamp * 1000L)
+    }
+
+    @TypeConverter
+    fun fromYearMonthToDate(yearMonth: String): Long {
+        val newYearMonth = dateFormatMCS.parse(yearMonth)
+        return newYearMonth.time / 1000
+    }
+
 }

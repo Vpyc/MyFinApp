@@ -1,6 +1,5 @@
 package com.example.myfinapp.ui.home
 
-import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,6 +13,8 @@ import com.example.myfinapp.room.CardDao
 import com.example.myfinapp.room.CardEntity
 import com.example.myfinapp.room.CategoryDao
 import com.example.myfinapp.room.CategoryEntity
+import com.example.myfinapp.room.MCSDao
+import com.example.myfinapp.room.MonthlyCategorySummaryEntity
 import com.example.myfinapp.room.MyFinDb
 import com.example.myfinapp.room.OperationDao
 import com.example.myfinapp.room.OperationEntity
@@ -21,6 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
 import java.util.Locale
 
 class HomeFragment : Fragment() {
@@ -30,6 +32,7 @@ class HomeFragment : Fragment() {
     private lateinit var cardDao: CardDao
     private lateinit var categoryDao: CategoryDao
     private lateinit var operationDao: OperationDao
+    private lateinit var mcsDao: MCSDao
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -46,6 +49,7 @@ class HomeFragment : Fragment() {
         cardDao = db.getCardDao()
         categoryDao = db.getCategoryDao()
         operationDao = db.getOperationDao()
+        mcsDao = db.getMCSDao()
 
         return root
     }
@@ -69,22 +73,28 @@ class HomeFragment : Fragment() {
         }
         binding.button3.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
-                val dateString = binding.editTextDate.text.toString()
-                val dateFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-                val dateStr = dateFormat.parse(dateString)
+                mcsDao.insertMcs(MonthlyCategorySummaryEntity(
+                    plus = 0.toDouble(),
+                    minus = binding.sum.text.toString().toDouble(),
+                    date = binding.editTextTime.text.toString(),
+                    categoryId = binding.categoryId.text.toString().toLong(),
+                ))
                 operationDao.insertOperation(OperationEntity(
                     sum = binding.sum.text.toString().toDouble(),
-                    date = dateStr,
+                    date = binding.editTextDate.text.toString(),
                     income = false,
                     cardId = binding.cardId.text.toString().toLong(),
                     categoryId = binding.categoryId.text.toString().toLong(),
                     ))
+
             }
         }
         binding.button4.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
-                val str = operationDao.getAllOperations()
+                val str = mcsDao.getAllMCS()
                 Log.d("str", str.toString())
+                Log.d("Date", str[0].date)
+
             }
         }
 
