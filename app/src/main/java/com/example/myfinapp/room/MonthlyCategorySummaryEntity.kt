@@ -6,8 +6,6 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
-import java.time.YearMonth
-import java.util.Date
 
 @Entity(
     tableName = "monthly_category_summary",

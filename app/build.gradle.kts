@@ -37,6 +37,9 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    packagingOptions {
+        resources.excludes.add("META-INF/DEPENDENCIES")
+    }
 }
 
 dependencies {
@@ -44,6 +47,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
     ksp("androidx.room:room-compiler:2.6.1")
 
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.12.0")
