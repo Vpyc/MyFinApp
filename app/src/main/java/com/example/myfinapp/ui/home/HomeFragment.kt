@@ -8,7 +8,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
@@ -65,7 +64,6 @@ class HomeFragment : Fragment() {
         contract = registerForActivityResult(StartActivityForResult()) { result ->
             handlePDFFileSelection(result)
         }
-
         return root
     }
 
@@ -78,7 +76,6 @@ class HomeFragment : Fragment() {
                         cardNumber = binding.cardNumb.text.toString(),
                     )
                 )
-
             }
         }
         binding.button2.setOnClickListener {
@@ -140,10 +137,87 @@ class HomeFragment : Fragment() {
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.also { uri ->
                 CoroutineScope(Dispatchers.IO).launch {
-                    readTextFromUri(uri)
+                    val text = parseData(readTextFromUri(uri))
+                    parseData2(text)
                 }
             }
         }
+    }
+
+    private fun parseData2(text: String) {
+        val lines = text.split("\n")
+        Log.d("lines count", lines.count().toString())
+        for((i, line) in lines.withIndex()) {
+            Log.d("line$i", line)
+        }
+        val operations = mutableListOf<Operation>()
+
+        for (i in 0 until lines.count()-1) {
+
+            val dateTimeCategory = lines[i]
+            val dateTimeCardOperation = lines[i + 1]
+
+            val dateTimeRegex = Regex("""(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2})""")
+            val categoryRegex = Regex("""(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2}) (.*) (\d+,\d{2})""")
+            val cardRegex = Regex("""(\d{2}\.\d{2}\.\d{4}) (\d+) (.*) Операция по карте \*\*\*\*(\d{4})""")
+
+            val dateTimeMatch = dateTimeRegex.find(dateTimeCategory)
+            val categoryMatch = categoryRegex.find(dateTimeCategory)
+            val cardMatch = cardRegex.find(dateTimeCardOperation)
+
+            if (dateTimeMatch != null && categoryMatch != null && cardMatch != null) {
+                val date = dateTimeMatch.groupValues[1]
+                val time = dateTimeMatch.groupValues[2]
+                val category = categoryMatch.groupValues[3]
+                val amount = categoryMatch.groupValues[4]
+                val code = cardMatch.groupValues[2]
+                val operationName = cardMatch.groupValues[3]
+                val card = cardMatch.groupValues[4]
+
+                val newOperation = Operation(
+                    date = date,
+                    time = time,
+                    category = category,
+                    amount = amount,
+                    code = code,
+                    operationName = operationName,
+                    card = card
+                )
+                operations.add(newOperation)
+            }
+        }
+
+        Log.d("operations count", operations.count().toString())
+        for (operation in operations) {
+            Log.d("date", operation.date)
+            Log.d("time", operation.time)
+            Log.d("category", operation.category)
+            Log.d("amount", operation.amount)
+            Log.d("code", operation.code)
+            Log.d("operationName", operation.operationName)
+            Log.d("card", operation.card)
+        }
+    }
+    private fun parseData(text: String): String {
+        val dateRegex =
+            Regex("""^(\d{2}\.\d{2}\.\d{4})""") // Регулярное выражение для даты в формате "дд.мм.гггг"
+        val lines = text.split("\n") // Разделение текста на строки
+
+        val relevantData = StringBuilder()
+
+        for (line in lines) {
+            var relevantDataFound = false
+            if (dateRegex.find(line) != null) {
+                relevantDataFound = true
+            }
+
+            if (relevantDataFound) {
+                relevantData.append(line).append("\n")
+            }
+        }
+        val relevantDataText = relevantData.toString()
+        Log.d("relText", relevantDataText)
+        return relevantDataText
     }
 
     private fun readTextFromUri(uri: Uri): String {
@@ -163,6 +237,16 @@ class HomeFragment : Fragment() {
         Log.d("text", stringBuilder.toString())
         return stringBuilder.toString()
     }
+
+    data class Operation(
+        val date: String,
+        val time: String,
+        val category: String,
+        val amount: String,
+        val code: String,
+        val operationName: String,
+        val card: String
+    )
 
 }
 
