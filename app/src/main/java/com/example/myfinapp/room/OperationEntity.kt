@@ -28,6 +28,7 @@ data class OperationEntity(
     @ColumnInfo(name = "sum") val sum: Double,
     @ColumnInfo(name = "date") @TypeConverters(DateConverter::class) val date: String,
     @ColumnInfo(name = "income") val income: Boolean,
+    @ColumnInfo(name = "description") val description: String = "",
     @ColumnInfo(name = "card_id") val cardId: Long,
     @ColumnInfo(name = "category_id") val categoryId: Long,
 )

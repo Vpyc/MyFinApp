@@ -20,7 +20,6 @@ abstract class MyFinDb: RoomDatabase() {
     abstract fun getOperationDao(): OperationDao
     abstract fun getMCSDao(): MCSDao
     companion object {
-
         fun getDb(context: Context): MyFinDb {
             return Room.databaseBuilder(
                 context.applicationContext,

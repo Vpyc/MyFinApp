@@ -4,32 +4,31 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 @Dao
-abstract class CardDao {
+interface CardDao {
     @Insert(entity = CardEntity::class)
-    abstract fun insertCard(card: CardEntity)
+    suspend fun insertCard(card: CardEntity)
     @Query("SELECT * FROM card")
-    abstract fun getAllCards(): List<CardEntity>
+    fun getAllCards(): List<CardEntity>
 }
 @Dao
-abstract class CategoryDao {
+interface CategoryDao {
     @Insert(entity = CategoryEntity::class)
-    abstract fun insertCategory(category: CategoryEntity)
+    suspend fun insertCategory(category: CategoryEntity)
     @Query("SELECT * FROM category")
-    abstract fun getAllCategories(): List<CategoryEntity>
+    fun getAllCategories(): List<CategoryEntity>
 }
 @Dao
-abstract class OperationDao{
+interface OperationDao{
     @Insert(entity = OperationEntity::class)
-    abstract fun insertOperation(operation: OperationEntity)
+    suspend fun insertOperation(operation: OperationEntity)
     @Query("SELECT * FROM operation")
-    abstract fun getAllOperations(): List<OperationEntity>
+    fun getAllOperations(): List<OperationEntity>
 }
 @Dao
-abstract class MCSDao {
+interface MCSDao {
     @Insert(entity = MonthlyCategorySummaryEntity::class)
-    abstract fun insertMcs(mcs: MonthlyCategorySummaryEntity)
+    suspend fun insertMcs(mcs: MonthlyCategorySummaryEntity)
     @Query("SELECT * FROM monthly_category_summary")
-    abstract fun getAllMCS(): List<MonthlyCategorySummaryEntity>
-
+    suspend fun getAllMCS(): List<MonthlyCategorySummaryEntity>
 }
 
