@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
-    private lateinit var contract: ActivityResultLauncher<Intent>
+    private lateinit var contractPdf: ActivityResultLauncher<Intent>
     private lateinit var intent: Intent
     private lateinit var homeViewModel: HomeViewModel
     private val binding get() = _binding!!
@@ -37,7 +37,7 @@ class HomeFragment : Fragment() {
         intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         intent.type = "application/pdf"
         intent.addCategory(Intent.CATEGORY_OPENABLE)
-        contract = registerForActivityResult(StartActivityForResult()) { result ->
+        contractPdf = registerForActivityResult(StartActivityForResult()) { result ->
             handlePDFFileSelection(result)
         }
         return root
@@ -49,24 +49,14 @@ class HomeFragment : Fragment() {
             Toast.makeText(requireContext(), it.toString(), Toast.LENGTH_LONG).show()
         }
         binding.button.setOnClickListener {
-            homeViewModel.insertCard(binding.cardId.text.toString())
         }
         binding.button2.setOnClickListener {
-            homeViewModel.insertCategory(
-                binding.categoryName.text.toString())
         }
         binding.button3.setOnClickListener {
             homeViewModel.insertMcs(
                 binding.sum.text.toString().toDouble(),
                 binding.editTextTime.text.toString(),
                 binding.categoryId.text.toString().toLong()
-            )
-            homeViewModel.insertOperation(
-                binding.sum.text.toString().toDouble(),
-                binding.editTextDate.text.toString(),
-                false,
-                binding.cardId.text.toString().toLong(),
-                binding.categoryId.text.toString().toLong(),
             )
         }
         binding.button4.setOnClickListener {
@@ -75,7 +65,7 @@ class HomeFragment : Fragment() {
             }
         }
         binding.button5.setOnClickListener {
-            contract.launch(intent)
+            contractPdf.launch(intent)
         }
     }
 

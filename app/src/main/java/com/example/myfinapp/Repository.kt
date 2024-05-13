@@ -15,11 +15,18 @@ class Repository(
     private val operationDao: OperationDao,
     private val mcsDao: MCSDao
 ) {
-    suspend fun insertCard(card: CardEntity) {
-        cardDao.insertCard(card)
+    suspend fun insertCard(card: CardEntity): Long {
+        return cardDao.insertCard(card)
     }
-    suspend fun insertCategory(category: CategoryEntity) {
-        categoryDao.insertCategory(category)
+    suspend fun findCardByCardNumber(cardNumber: String): Long? {
+        return cardDao.findByCardNumber(cardNumber)
+    }
+    suspend fun insertCategory(category: CategoryEntity):Long {
+        return categoryDao.insertCategory(category)
+    }
+    suspend fun findCategoryByCategoryName(categoryName: String): Long? {
+        return categoryDao.findByCategoryName(categoryName)
+
     }
 
     suspend fun insertMcs(mcs: MonthlyCategorySummaryEntity) {
@@ -33,4 +40,6 @@ class Repository(
     suspend fun insertOperation(operation: OperationEntity) {
         operationDao.insertOperation(operation)
     }
+
+
 }

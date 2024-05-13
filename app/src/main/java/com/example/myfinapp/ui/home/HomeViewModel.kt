@@ -15,28 +15,33 @@ import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import kotlinx.coroutines.launch
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
-class HomeViewModel(val repository: Repository) : ViewModel() {
+class HomeViewModel(private val repository: Repository) : ViewModel() {
 
     val _mcsList = MutableLiveData<List<MonthlyCategorySummaryEntity>>()
-    fun insertCard(cardNumber: String) {
-        val card = CardEntity(
-            cardNumber = cardNumber,
-            bankName = "Сбербанк"
-        )
-        viewModelScope.launch {
-            repository.insertCard(card)
+    suspend fun insertCard(cardNumber: String): Long {
+        return suspendCoroutine { continuation ->
+            viewModelScope.launch {
+                val card = CardEntity(
+                    cardNumber = cardNumber,
+                )
+                continuation.resume(repository.insertCard(card))
+            }
+        }
+    }
+    suspend fun insertCategory(categoryName: String): Long {
+        return suspendCoroutine { continuation ->
+            viewModelScope.launch {
+                val category = CategoryEntity(
+                    categoryName = categoryName
+                )
+                continuation.resume(repository.insertCategory(category))
+            }
         }
     }
 
-    fun insertCategory(categoryName: String) {
-        viewModelScope.launch {
-            val category = CategoryEntity(
-                categoryName = categoryName
-            )
-            repository.insertCategory(category)
-        }
-    }
 
     fun insertMcs(sum: Double, date: String, categoryId: Long) {
         viewModelScope.launch {
@@ -57,21 +62,44 @@ class HomeViewModel(val repository: Repository) : ViewModel() {
     }
 
     fun insertOperation(
-        sum: Double,
+        sum: String,
         date: String,
         income: Boolean,
+        description: String,
         cardId: Long,
         categoryId: Long
     ) {
         viewModelScope.launch {
             val operation = OperationEntity(
-                sum = sum,
+                sum = sum.toDouble(),
                 date = date,
                 income = income,
                 cardId = cardId,
                 categoryId = categoryId
             )
             repository.insertOperation(operation)
+        }
+    }
+    private suspend fun findCardId(cardNumber: String): Long {
+        return suspendCoroutine { continuation ->
+            viewModelScope.launch {
+                var cardId = repository.findCardByCardNumber(cardNumber)
+                if (cardId == null) {
+                    cardId = insertCard(cardNumber)
+                }
+                continuation.resume(cardId ?: -1L)
+            }
+        }
+    }
+    private suspend fun findCategoryId(categoryName: String): Long {
+        return suspendCoroutine { continuation ->
+            viewModelScope.launch {
+                var categoryId = repository.findCategoryByCategoryName(categoryName)
+                if (categoryId == null) {
+                    categoryId = insertCategory(categoryName)
+                }
+                continuation.resume(categoryId ?: -1L)
+            }
         }
     }
 
@@ -81,55 +109,37 @@ class HomeViewModel(val repository: Repository) : ViewModel() {
         for ((i, line) in lines.withIndex()) {
             Log.d("line$i", line)
         }
-        val operations = mutableListOf<Operation>()
+        val cardNumber = findCardNumber(lines)
+        viewModelScope.launch {
+            val cardId = findCardId(cardNumber)
+            for (i in 0 until lines.count() - 1 step 2) {
+                val dateTimeCategory = lines[i]
+                val income = findPlus(dateTimeCategory)
+                val dateTimeCardOperation = lines[i + 1]
+                val dateTimeRegex = Regex("""(\d{2}\.\d{2}\.\d{4} \d{2}:\d{2})""")
+                val categoryRegex =
+                    Regex("""(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2}) (.*) ([+]?[\d\s]+,\d{2})""")
+                val cardRegex =
+                    Regex("""(\d{2}\.\d{2}\.\d{4}) (\d+) (.*) Операция по карте \*\*\*\*(\d{4})""")
 
-        for (i in 0 until lines.count() - 1) {
+                val dateTimeMatch = dateTimeRegex.find(dateTimeCategory)
+                val categoryMatch = categoryRegex.find(dateTimeCategory)
+                val cardMatch = cardRegex.find(dateTimeCardOperation)
 
-            val dateTimeCategory = lines[i]
-            val dateTimeCardOperation = lines[i + 1]
-
-            val dateTimeRegex = Regex("""(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2})""")
-            val categoryRegex =
-                Regex("""(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2}) (.*) (\d+,\d{2})""")
-            val cardRegex =
-                Regex("""(\d{2}\.\d{2}\.\d{4}) (\d+) (.*) Операция по карте \*\*\*\*(\d{4})""")
-
-            val dateTimeMatch = dateTimeRegex.find(dateTimeCategory)
-            val categoryMatch = categoryRegex.find(dateTimeCategory)
-            val cardMatch = cardRegex.find(dateTimeCardOperation)
-
-            if (dateTimeMatch != null && categoryMatch != null && cardMatch != null) {
-                val date = dateTimeMatch.groupValues[1]
-                val time = dateTimeMatch.groupValues[2]
-                val category = categoryMatch.groupValues[3]
-                val amount = categoryMatch.groupValues[4]
-                val operationName = cardMatch.groupValues[3]
-                val card = cardMatch.groupValues[4]
-
-                val newOperation = Operation(
-                    date = date,
-                    time = time,
-                    category = category,
-                    amount = if (amount.startsWith("+")) {
-                        amount.drop(1).replace(",", ".").toDouble()
-                    } else {
-                        amount.replace(",", ".").toDouble()
-                    },
-                    income = false,
-                    description = operationName,
-                    card = card
-                )
-                operations.add(newOperation)
+                if (dateTimeMatch != null && categoryMatch != null && cardMatch != null) {
+                    val date = dateTimeMatch.groupValues[1]
+                    val category = categoryMatch.groupValues[3]
+                    val categoryId = findCategoryId(category)
+                    val description = cardMatch.groupValues[3]
+                    val sum = categoryMatch.groupValues[4]
+                        .replace(",", ".")
+                        .replace("\u00A0", "")
+                    if (income) {
+                        sum.drop(1)
+                    }
+                    insertOperation(sum, date, income, description, cardId, categoryId)
+                }
             }
-        }
-        Log.d("operations count", operations.count().toString())
-        for (operation in operations) {
-            Log.d("date", operation.date)
-            Log.d("time", operation.time)
-            Log.d("category", operation.category)
-            Log.d("amount", operation.amount.toString())
-            Log.d("operationName", operation.description)
-            Log.d("card", operation.card)
         }
     }
 
@@ -172,14 +182,20 @@ class HomeViewModel(val repository: Repository) : ViewModel() {
         Log.d("text", stringBuilder.toString())
         return stringBuilder.toString()
     }
+    private fun findPlus(line: String): Boolean {
+        return line.contains("+")
+    }
 
-    data class Operation(
-        val date: String,
-        val time: String,
-        val category: String,
-        val amount: Double,
-        val income: Boolean,
-        val description: String,
-        val card: String
-    )
+    private fun findCardNumber(lines: List<String>): String {
+        val cardRegex =
+            Regex("""(\d{2}\.\d{2}\.\d{4}) (\d+) (.*) Операция по карте \*\*\*\*(\d{4})""")
+        for (i in 0 until lines.count() - 1 step 2) {
+            val dateTimeCardOperation = lines[i + 1]
+            val cardMatch = cardRegex.find(dateTimeCardOperation)
+            if (cardMatch!= null) {
+                return cardMatch.groupValues[4]
+            }
+        }
+        return "" // Если не нашли номер карты, то возвращаем пустую строку
+    }
 }
