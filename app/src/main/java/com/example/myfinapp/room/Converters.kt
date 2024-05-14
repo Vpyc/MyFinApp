@@ -5,30 +5,38 @@ import androidx.room.TypeConverter
 import java.util.Locale
 
 class DateConverter {
-    private val dateFormatOperation = SimpleDateFormat("dd.MM.yyyy HH:mm"
-                                        , Locale.getDefault())
+    private val dateFormatToUi = SimpleDateFormat(
+        "dd.MM.yyyy HH:mm", Locale.getDefault()
+    )
+    private val dateFormatToDb = SimpleDateFormat(
+        "yyyy-MM-dd HH:mm", Locale.getDefault()
+    )
+
     @TypeConverter
-    fun fromStringToTimestamp(date: String): Long {
-        val newDate = dateFormatOperation.parse(date)
-        return newDate.time / 1000
+    fun fromStringToTimestamp(date: String): String {
+        val newDate = dateFormatToUi.parse(date)
+        return dateFormatToDb.format(newDate)
     }
 
     @TypeConverter
-    fun fromTimestampToString(timestamp: Long): String {
-        return dateFormatOperation.format(timestamp * 1000L)
+    fun fromTimestampToString(timestamp: String): String {
+        val newDate = dateFormatToDb.parse(timestamp)
+        return dateFormatToUi.format(newDate)
     }
 }
-class YearMonthConverter{
-    private val dateFormatMCS = SimpleDateFormat("MM.yyyy", Locale.getDefault())
+
+class YearMonthConverter {
+    private val dateFormatToUi = SimpleDateFormat("MM.yyyy", Locale.getDefault())
+    private val dateFormatToDb = SimpleDateFormat("yyyy-MM", Locale.getDefault())
 
     @TypeConverter
     fun fromTimestampToMyDate(timestamp: Long): String {
-        return dateFormatMCS.format(timestamp * 1000L)
+        return dateFormatToDb.format(timestamp * 1000L)
     }
 
     @TypeConverter
     fun fromYearMonthToDate(yearMonth: String): Long {
-        val newYearMonth = dateFormatMCS.parse(yearMonth)
+        val newYearMonth = dateFormatToUi.parse(yearMonth)
         return newYearMonth.time / 1000
     }
 

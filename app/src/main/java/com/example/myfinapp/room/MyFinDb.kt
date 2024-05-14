@@ -11,14 +11,15 @@ import androidx.room.RoomDatabase
         CategoryEntity::class,
         OperationEntity::class,
         MonthlyCategorySummaryEntity::class,
-        ],
+    ],
     version = 1
 )
-abstract class MyFinDb: RoomDatabase() {
+abstract class MyFinDb : RoomDatabase() {
     abstract fun getCardDao(): CardDao
     abstract fun getCategoryDao(): CategoryDao
     abstract fun getOperationDao(): OperationDao
     abstract fun getMCSDao(): MCSDao
+
     companion object {
         fun getDb(context: Context): MyFinDb {
             return Room.databaseBuilder(

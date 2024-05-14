@@ -18,7 +18,8 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class HomeViewModel(private val repository: Repository) : ViewModel() {
+class HomeViewModel(private val repository: Repository, private val converter: DateConverter) :
+    ViewModel() {
 
     val _mcsList = MutableLiveData<List<MonthlyCategorySummaryEntity>>()
     suspend fun insertCard(cardNumber: String): Long {
@@ -31,7 +32,8 @@ class HomeViewModel(private val repository: Repository) : ViewModel() {
             }
         }
     }
-    suspend fun insertCategory(categoryName: String): Long {
+
+    private suspend fun insertCategory(categoryName: String): Long {
         return suspendCoroutine { continuation ->
             viewModelScope.launch {
                 val category = CategoryEntity(
@@ -42,12 +44,11 @@ class HomeViewModel(private val repository: Repository) : ViewModel() {
         }
     }
 
-
-    fun insertMcs(sum: Double, date: String, categoryId: Long) {
+    private fun insertMcs(plus: String, minus: String, date: Long, categoryId: Long) {
         viewModelScope.launch {
             val mcs = MonthlyCategorySummaryEntity(
-                plus = 0.0,
-                minus = sum,
+                plus = plus.toDouble(),
+                minus = minus.toDouble(),
                 date = date,
                 categoryId = categoryId
             )
@@ -57,13 +58,16 @@ class HomeViewModel(private val repository: Repository) : ViewModel() {
 
     fun getAllMcs() {
         viewModelScope.launch {
-            _mcsList.value = repository.getAllMcs()
+            val mcsList = repository.getAllMcs()
+            for (mcs in mcsList) {
+                Log.d("operation", converter.convertMcsFromLong(mcs.date))
+            }
         }
     }
 
-    fun insertOperation(
+    private fun insertOperation(
         sum: String,
-        date: String,
+        date: Long,
         income: Boolean,
         description: String,
         cardId: Long,
@@ -74,12 +78,29 @@ class HomeViewModel(private val repository: Repository) : ViewModel() {
                 sum = sum.toDouble(),
                 date = date,
                 income = income,
+                description = description,
                 cardId = cardId,
                 categoryId = categoryId
             )
             repository.insertOperation(operation)
         }
     }
+
+    private fun updateOrInsertMcs(plus: String, minus: String, date: Long, categoryId: Long) {
+        viewModelScope.launch {
+            val mcs = repository.findMcsByDateAndCategoryId(date, categoryId)
+            if (mcs != null) {
+                mcs.plus += plus.toDouble()
+                mcs.minus += minus.toDouble()
+                repository.updateMcs(mcs)
+                Log.d("Update", converter.convertMcsFromLong(mcs.date) + " " + categoryId)
+            } else {
+                insertMcs(plus, minus, date, categoryId)
+                Log.d("Insert", converter.convertMcsFromLong(date) + " " + categoryId)
+            }
+        }
+    }
+
     private suspend fun findCardId(cardNumber: String): Long {
         return suspendCoroutine { continuation ->
             viewModelScope.launch {
@@ -87,10 +108,11 @@ class HomeViewModel(private val repository: Repository) : ViewModel() {
                 if (cardId == null) {
                     cardId = insertCard(cardNumber)
                 }
-                continuation.resume(cardId ?: -1L)
+                continuation.resume(cardId)
             }
         }
     }
+
     private suspend fun findCategoryId(categoryName: String): Long {
         return suspendCoroutine { continuation ->
             viewModelScope.launch {
@@ -98,17 +120,37 @@ class HomeViewModel(private val repository: Repository) : ViewModel() {
                 if (categoryId == null) {
                     categoryId = insertCategory(categoryName)
                 }
-                continuation.resume(categoryId ?: -1L)
+                continuation.resume(categoryId)
+            }
+        }
+    }
+
+    private fun insertOperationOrSkip(
+        sum: String,
+        date: Long,
+        income: Boolean,
+        description: String,
+        cardId: Long,
+        categoryId: Long
+    ) {
+        viewModelScope.launch {
+            val operation =
+                repository.findOperationByDate(
+                    sum.toDouble(),
+                    date,
+                    income,
+                    description,
+                    cardId,
+                    categoryId
+                )
+            if (operation == null) {
+                insertOperation(sum, date, income, description, cardId, categoryId)
             }
         }
     }
 
     fun parseData2(text: String) {
         val lines = text.split("\n")
-        Log.d("lines count", lines.count().toString())
-        for ((i, line) in lines.withIndex()) {
-            Log.d("line$i", line)
-        }
         val cardNumber = findCardNumber(lines)
         viewModelScope.launch {
             val cardId = findCardId(cardNumber)
@@ -121,13 +163,15 @@ class HomeViewModel(private val repository: Repository) : ViewModel() {
                     Regex("""(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2}) (.*) ([+]?[\d\s]+,\d{2})""")
                 val cardRegex =
                     Regex("""(\d{2}\.\d{2}\.\d{4}) (\d+) (.*) Операция по карте \*\*\*\*(\d{4})""")
-
+                val monthYearRegex = Regex("""(\d{2}\.)(\d{2}\.\d{4}) """)
+                val monthYearMatch = monthYearRegex.find(dateTimeCategory)
                 val dateTimeMatch = dateTimeRegex.find(dateTimeCategory)
                 val categoryMatch = categoryRegex.find(dateTimeCategory)
                 val cardMatch = cardRegex.find(dateTimeCardOperation)
 
-                if (dateTimeMatch != null && categoryMatch != null && cardMatch != null) {
+                if (dateTimeMatch != null && categoryMatch != null && cardMatch != null && monthYearMatch != null) {
                     val date = dateTimeMatch.groupValues[1]
+                    val monthYear = monthYearMatch.groupValues[2]
                     val category = categoryMatch.groupValues[3]
                     val categoryId = findCategoryId(category)
                     val description = cardMatch.groupValues[3]
@@ -136,8 +180,28 @@ class HomeViewModel(private val repository: Repository) : ViewModel() {
                         .replace("\u00A0", "")
                     if (income) {
                         sum.drop(1)
+                        updateOrInsertMcs(
+                            sum,
+                            "0",
+                            converter.convertMcsToLong(monthYear),
+                            categoryId
+                        )
+                    } else {
+                        updateOrInsertMcs(
+                            "0",
+                            sum,
+                            converter.convertMcsToLong(monthYear),
+                            categoryId
+                        )
                     }
-                    insertOperation(sum, date, income, description, cardId, categoryId)
+                    insertOperationOrSkip(
+                        sum,
+                        converter.convertOperationToLong(date),
+                        income,
+                        description,
+                        cardId,
+                        categoryId
+                    )
                 }
             }
         }
@@ -160,9 +224,7 @@ class HomeViewModel(private val repository: Repository) : ViewModel() {
                 relevantData.append(line).append("\n")
             }
         }
-        val relevantDataText = relevantData.toString()
-        Log.d("relText", relevantDataText)
-        return relevantDataText
+        return relevantData.toString()
     }
 
     fun readTextFromUri(uri: Uri, context: Context): String {
@@ -179,9 +241,9 @@ class HomeViewModel(private val repository: Repository) : ViewModel() {
             stringBuilder.append(text)
             document.close()
         }
-        Log.d("text", stringBuilder.toString())
         return stringBuilder.toString()
     }
+
     private fun findPlus(line: String): Boolean {
         return line.contains("+")
     }
@@ -192,10 +254,19 @@ class HomeViewModel(private val repository: Repository) : ViewModel() {
         for (i in 0 until lines.count() - 1 step 2) {
             val dateTimeCardOperation = lines[i + 1]
             val cardMatch = cardRegex.find(dateTimeCardOperation)
-            if (cardMatch!= null) {
+            if (cardMatch != null) {
                 return cardMatch.groupValues[4]
             }
         }
         return "" // Если не нашли номер карты, то возвращаем пустую строку
+    }
+
+    fun getAllOperations() {
+        viewModelScope.launch {
+            val operations = repository.getAllOperationsSortedByDate()
+            for (operation in operations) {
+                Log.d("operation", converter.convertOperationFromLong(operation.date))
+            }
+        }
     }
 }

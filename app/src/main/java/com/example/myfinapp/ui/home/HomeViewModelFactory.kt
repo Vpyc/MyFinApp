@@ -7,14 +7,15 @@ import com.example.myfinapp.Repository
 import com.example.myfinapp.room.MyFinDb
 
 
-class HomeViewModelFactory(context: Context): ViewModelProvider.Factory{
+class HomeViewModelFactory(context: Context) : ViewModelProvider.Factory {
     private val db = MyFinDb.getDb(context)
     private val operationDao = db.getOperationDao()
     private val cardDao = db.getCardDao()
     private val categoryDao = db.getCategoryDao()
     private val mcsDao = db.getMCSDao()
     private val repository = Repository(cardDao, categoryDao, operationDao, mcsDao)
+    private val converter = DateConverter()
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return HomeViewModel(repository) as T
+        return HomeViewModel(repository, converter) as T
     }
 }

@@ -53,16 +53,10 @@ class HomeFragment : Fragment() {
         binding.button2.setOnClickListener {
         }
         binding.button3.setOnClickListener {
-            homeViewModel.insertMcs(
-                binding.sum.text.toString().toDouble(),
-                binding.editTextTime.text.toString(),
-                binding.categoryId.text.toString().toLong()
-            )
+
         }
         binding.button4.setOnClickListener {
-            CoroutineScope(Dispatchers.IO).launch {
-                homeViewModel.getAllMcs()
-            }
+            homeViewModel.getAllOperations()
         }
         binding.button5.setOnClickListener {
             contractPdf.launch(intent)
@@ -78,7 +72,12 @@ class HomeFragment : Fragment() {
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.also { uri ->
                 CoroutineScope(Dispatchers.IO).launch {
-                    val text = homeViewModel.parseData(homeViewModel.readTextFromUri(uri, requireContext()) )
+                    val text = homeViewModel.parseData(
+                        homeViewModel.readTextFromUri(
+                            uri,
+                            requireContext()
+                        )
+                    )
                     homeViewModel.parseData2(text)
                 }
             }

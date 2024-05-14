@@ -5,7 +5,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
 
 @Entity(
     tableName = "monthly_category_summary",
@@ -20,8 +19,8 @@ import androidx.room.TypeConverters
 )
 data class MonthlyCategorySummaryEntity(
     @PrimaryKey(autoGenerate = true) val id: Long? = null,
-    @ColumnInfo(name = "plus") val plus: Double,
-    @ColumnInfo(name = "minus") val minus: Double,
-    @ColumnInfo(name = "date") @TypeConverters(YearMonthConverter::class) val date: String,
+    @ColumnInfo(name = "plus") var plus: Double,
+    @ColumnInfo(name = "minus") var minus: Double,
+    @ColumnInfo(name = "date") val date: Long,
     @ColumnInfo(name = "category_id") val categoryId: Long,
 )

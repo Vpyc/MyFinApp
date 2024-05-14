@@ -18,15 +18,17 @@ class Repository(
     suspend fun insertCard(card: CardEntity): Long {
         return cardDao.insertCard(card)
     }
+
     suspend fun findCardByCardNumber(cardNumber: String): Long? {
         return cardDao.findByCardNumber(cardNumber)
     }
-    suspend fun insertCategory(category: CategoryEntity):Long {
+
+    suspend fun insertCategory(category: CategoryEntity): Long {
         return categoryDao.insertCategory(category)
     }
+
     suspend fun findCategoryByCategoryName(categoryName: String): Long? {
         return categoryDao.findByCategoryName(categoryName)
-
     }
 
     suspend fun insertMcs(mcs: MonthlyCategorySummaryEntity) {
@@ -37,9 +39,33 @@ class Repository(
         return mcsDao.getAllMCS()
     }
 
+    suspend fun findMcsByDateAndCategoryId(
+        date: Long,
+        categoryId: Long
+    ): MonthlyCategorySummaryEntity? {
+        return mcsDao.findMcsByDateAndCategoryId(date, categoryId)
+    }
+
+    suspend fun updateMcs(mcs: MonthlyCategorySummaryEntity) {
+        mcsDao.updateMcs(mcs)
+    }
+
     suspend fun insertOperation(operation: OperationEntity) {
         operationDao.insertOperation(operation)
     }
 
+    suspend fun getAllOperationsSortedByDate(): List<OperationEntity> {
+        return operationDao.getAllOperationsSortedByDate()
+    }
 
+    suspend fun findOperationByDate(
+        sum: Double,
+        date: Long,
+        income: Boolean,
+        description: String,
+        cardId: Long,
+        categoryId: Long
+    ): OperationEntity? {
+        return operationDao.findOperationByAll(sum, date, income, description, cardId, categoryId)
+    }
 }

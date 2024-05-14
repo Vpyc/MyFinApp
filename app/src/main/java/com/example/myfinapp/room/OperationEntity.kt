@@ -5,7 +5,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
 
 @Entity(
     tableName = "operation",
@@ -26,7 +25,7 @@ import androidx.room.TypeConverters
 data class OperationEntity(
     @PrimaryKey(autoGenerate = true) val id: Long? = null,
     @ColumnInfo(name = "sum") val sum: Double,
-    @ColumnInfo(name = "date") @TypeConverters(DateConverter::class) val date: String,
+    @ColumnInfo(name = "date") val date: Long,
     @ColumnInfo(name = "income") val income: Boolean,
     @ColumnInfo(name = "description") val description: String = "",
     @ColumnInfo(name = "card_id") val cardId: Long,
