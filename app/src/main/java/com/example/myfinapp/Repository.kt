@@ -23,49 +23,29 @@ class Repository(
             block()
         }
     }
-    suspend fun insertCard(card: CardEntity): Long {
-        return cardDao.insertCard(card)
-    }
 
-    suspend fun findCardByCardNumber(cardNumber: String): Long? {
-        return cardDao.findByCardNumber(cardNumber)
-    }
+    suspend fun insertCard(card: CardEntity) = cardDao.insertCard(card)
 
-    suspend fun insertCategory(category: CategoryEntity): Long {
-        return categoryDao.insertCategory(category)
-    }
+    suspend fun findCardByCardNumber(cardNumber: String) = cardDao.findByCardNumber(cardNumber)
 
-    suspend fun findCategoryByCategoryName(categoryName: String): Long? {
-        return categoryDao.findByCategoryName(categoryName)
-    }
+    suspend fun insertCategory(category: CategoryEntity) = categoryDao.insertCategory(category)
 
-    suspend fun insertMcs(mcs: MonthlyCategorySummaryEntity) {
-        mcsDao.insertMcs(mcs)
-    }
+    suspend fun findCategoryByCategoryName(categoryName: String) =
+        categoryDao.findByCategoryName(categoryName)
 
-    suspend fun getAllMcs(): List<MonthlyCategorySummaryEntity> {
-        return mcsDao.getAllMCS()
-    }
+    suspend fun insertMcs(mcs: MonthlyCategorySummaryEntity) = mcsDao.insertMcs(mcs)
 
-    suspend fun findMcsByDateAndCategoryId(
-        date: Long,
-        categoryId: Long
-    ): MonthlyCategorySummaryEntity? {
-        val result = mcsDao.findMcsByDateAndCategoryId(date, categoryId)
-        return result
-    }
+    suspend fun getAllMcs() = mcsDao.getAllMCS()
 
-    suspend fun updateMcs(mcs: MonthlyCategorySummaryEntity) {
-        mcsDao.updateMcs(mcs)
-    }
+    suspend fun findMcsByDateAndCategoryId(date: Long, categoryId: Long) =
+        mcsDao.findMcsByDateAndCategoryId(date, categoryId)
 
-    suspend fun insertOperation(operation: OperationEntity) {
+    suspend fun updateMcs(mcs: MonthlyCategorySummaryEntity) = mcsDao.updateMcs(mcs)
+
+    suspend fun insertOperation(operation: OperationEntity) =
         operationDao.insertOperation(operation)
-    }
 
-    suspend fun getAllOperationsSortedByDate(): List<OperationEntity> {
-        return operationDao.getAllOperationsSortedByDate()
-    }
+    fun getAllOperationsSortedByDate() = operationDao.getAllOperationsSortedByDate()
 
     suspend fun findOperationByDate(
         sum: Double,
@@ -74,7 +54,5 @@ class Repository(
         description: String,
         cardId: Long,
         categoryId: Long
-    ): OperationEntity? {
-        return operationDao.findOperationByAll(sum, date, income, description, cardId, categoryId)
-    }
+    ) = operationDao.findOperationByAll(sum, date, income, description, cardId, categoryId)
 }

@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CardDao {
@@ -52,7 +53,7 @@ interface OperationDao {
     ): OperationEntity?
 
     @Query("SELECT * FROM operation ORDER BY date")
-    suspend fun getAllOperationsSortedByDate(): List<OperationEntity>
+    fun getAllOperationsSortedByDate(): Flow<List<OperationEntity>>
 }
 
 @Dao

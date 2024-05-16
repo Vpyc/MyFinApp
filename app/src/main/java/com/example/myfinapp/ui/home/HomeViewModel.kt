@@ -18,7 +18,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -29,7 +28,7 @@ class HomeViewModel(private val repository: Repository, private val converter: D
     val _mcsList = MutableLiveData<List<MonthlyCategorySummaryEntity>>()
     private suspend fun insertCard(cardNumber: String): Long {
         return suspendCoroutine { continuation ->
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.IO) {
                 val card = CardEntity(
                     cardNumber = cardNumber,
                 )
@@ -40,20 +39,11 @@ class HomeViewModel(private val repository: Repository, private val converter: D
 
     private suspend fun insertCategory(categoryName: String): Long {
         return suspendCoroutine { continuation ->
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.IO)  {
                 val category = CategoryEntity(
                     categoryName = categoryName
                 )
                 continuation.resume(repository.insertCategory(category))
-            }
-        }
-    }
-
-    fun getAllMcs() {
-        viewModelScope.launch {
-            val mcsList = repository.getAllMcs()
-            for (mcs in mcsList) {
-                Log.d("operation", converter.convertMcsFromLong(mcs.date))
             }
         }
     }
@@ -66,7 +56,7 @@ class HomeViewModel(private val repository: Repository, private val converter: D
         cardId: Long,
         categoryId: Long
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO)  {
             val operation = OperationEntity(
                 sum = sum.toDouble(),
                 date = date,
@@ -88,7 +78,7 @@ class HomeViewModel(private val repository: Repository, private val converter: D
     }
 
     private suspend fun updateOrInsertMcs(plus: String, minus: String, date: Long, categoryId: Long) {
-        withContext(Dispatchers.IO) {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.withTransaction {
                 val mcs = findMcsByDateAndCategoryId(date, categoryId)
                 if (mcs == null) {
@@ -141,7 +131,7 @@ class HomeViewModel(private val repository: Repository, private val converter: D
         cardId: Long,
         categoryId: Long
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             repository.withTransaction{
 
                     val operation =
@@ -183,7 +173,7 @@ class HomeViewModel(private val repository: Repository, private val converter: D
                 val categoryRegex =
                     Regex("""(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2}) (.*) ([+]?[\d\s]+,\d{2})""")
                 val cardRegex =
-                    Regex("""(\d{2}\.\d{2}\.\d{4}) (\d+) (.*?)(?:(Операция по карте \*\*\*\*(\d{4}))?$)""")
+                    Regex("""(\d{2}\.\d{2}\.\d{4}) (\d+) (.*?)(Операция по карте \*\*\*\*(\d{4}))?$""")
                 val monthYearRegex = Regex("""(\d{2}\.)(\d{2}\.\d{4}) """)
                 val monthYearMatch = monthYearRegex.find(dateTimeCategory)
                 val dateTimeMatch = dateTimeRegex.find(dateTimeCategory)
@@ -270,12 +260,4 @@ class HomeViewModel(private val repository: Repository, private val converter: D
         return "" // Если не нашли номер карты, то возвращаем пустую строку
     }
 
-    fun getAllOperations() {
-        viewModelScope.launch {
-            val operations = repository.getAllOperationsSortedByDate()
-            for (operation in operations) {
-                Log.d("operation", converter.convertOperationFromLong(operation.date))
-            }
-        }
-    }
 }
