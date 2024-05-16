@@ -14,15 +14,20 @@ import com.example.myfinapp.room.OperationEntity
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class HomeViewModel(private val repository: Repository, private val converter: DateConverter) :
     ViewModel() {
+    private val mutex = Mutex()
 
     val _mcsList = MutableLiveData<List<MonthlyCategorySummaryEntity>>()
-    suspend fun insertCard(cardNumber: String): Long {
+    private suspend fun insertCard(cardNumber: String): Long {
         return suspendCoroutine { continuation ->
             viewModelScope.launch {
                 val card = CardEntity(
@@ -41,18 +46,6 @@ class HomeViewModel(private val repository: Repository, private val converter: D
                 )
                 continuation.resume(repository.insertCategory(category))
             }
-        }
-    }
-
-    private fun insertMcs(plus: String, minus: String, date: Long, categoryId: Long) {
-        viewModelScope.launch {
-            val mcs = MonthlyCategorySummaryEntity(
-                plus = plus.toDouble(),
-                minus = minus.toDouble(),
-                date = date,
-                categoryId = categoryId
-            )
-            repository.insertMcs(mcs)
         }
     }
 
@@ -85,18 +78,32 @@ class HomeViewModel(private val repository: Repository, private val converter: D
             repository.insertOperation(operation)
         }
     }
+    private suspend fun findMcsByDateAndCategoryId(date: Long, categoryId: Long): MonthlyCategorySummaryEntity? {
+        return suspendCoroutine { continuation ->
+            viewModelScope.launch {
+                continuation.resume(repository.findMcsByDateAndCategoryId(date, categoryId))
 
-    private fun updateOrInsertMcs(plus: String, minus: String, date: Long, categoryId: Long) {
-        viewModelScope.launch {
-            val mcs = repository.findMcsByDateAndCategoryId(date, categoryId)
-            if (mcs != null) {
-                mcs.plus += plus.toDouble()
-                mcs.minus += minus.toDouble()
-                repository.updateMcs(mcs)
-                Log.d("Update", converter.convertMcsFromLong(mcs.date) + " " + categoryId)
-            } else {
-                insertMcs(plus, minus, date, categoryId)
-                Log.d("Insert", converter.convertMcsFromLong(date) + " " + categoryId)
+            }
+        }
+    }
+
+    private suspend fun updateOrInsertMcs(plus: String, minus: String, date: Long, categoryId: Long) {
+        withContext(Dispatchers.IO) {
+            repository.withTransaction {
+                val mcs = findMcsByDateAndCategoryId(date, categoryId)
+                if (mcs == null) {
+                    val newMcs = MonthlyCategorySummaryEntity(
+                        plus = plus.toDouble(),
+                        minus = minus.toDouble(),
+                        date = date,
+                        categoryId = categoryId
+                    )
+                    repository.insertMcs(newMcs)
+                } else {
+                    mcs.plus += plus.toDouble()
+                    mcs.minus += minus.toDouble()
+                    repository.updateMcs(mcs)
+                }
             }
         }
     }
@@ -125,26 +132,40 @@ class HomeViewModel(private val repository: Repository, private val converter: D
         }
     }
 
-    private fun insertOperationOrSkip(
+    private fun insertOperationAndMcsOrSkip(
         sum: String,
         date: Long,
+        monthYear: Long,
         income: Boolean,
         description: String,
         cardId: Long,
         categoryId: Long
     ) {
         viewModelScope.launch {
-            val operation =
-                repository.findOperationByDate(
-                    sum.toDouble(),
-                    date,
-                    income,
-                    description,
-                    cardId,
-                    categoryId
-                )
-            if (operation == null) {
-                insertOperation(sum, date, income, description, cardId, categoryId)
+            repository.withTransaction{
+
+                    val operation =
+                        repository.findOperationByDate(
+                            sum.toDouble(),
+                            date,
+                            income,
+                            description,
+                            cardId,
+                            categoryId
+                        )
+                    if (operation == null) {
+                        insertOperation(sum, date, income, description, cardId, categoryId)
+                        mutex.withLock {
+                            if(income) {
+                                updateOrInsertMcs( sum, "0", monthYear, categoryId)
+                                Log.d("Update plus", converter.convertMcsFromLong(monthYear) + " " + categoryId)
+                            }
+                            else{
+                                updateOrInsertMcs("0", sum, monthYear, categoryId)
+                                Log.d("Update minus", converter.convertMcsFromLong(monthYear) + " " + categoryId)
+                            }
+                        }
+                }
             }
         }
     }
@@ -162,7 +183,7 @@ class HomeViewModel(private val repository: Repository, private val converter: D
                 val categoryRegex =
                     Regex("""(\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2}) (.*) ([+]?[\d\s]+,\d{2})""")
                 val cardRegex =
-                    Regex("""(\d{2}\.\d{2}\.\d{4}) (\d+) (.*) Операция по карте \*\*\*\*(\d{4})""")
+                    Regex("""(\d{2}\.\d{2}\.\d{4}) (\d+) (.*?)(?:(Операция по карте \*\*\*\*(\d{4}))?$)""")
                 val monthYearRegex = Regex("""(\d{2}\.)(\d{2}\.\d{4}) """)
                 val monthYearMatch = monthYearRegex.find(dateTimeCategory)
                 val dateTimeMatch = dateTimeRegex.find(dateTimeCategory)
@@ -180,23 +201,11 @@ class HomeViewModel(private val repository: Repository, private val converter: D
                         .replace("\u00A0", "")
                     if (income) {
                         sum.drop(1)
-                        updateOrInsertMcs(
-                            sum,
-                            "0",
-                            converter.convertMcsToLong(monthYear),
-                            categoryId
-                        )
-                    } else {
-                        updateOrInsertMcs(
-                            "0",
-                            sum,
-                            converter.convertMcsToLong(monthYear),
-                            categoryId
-                        )
                     }
-                    insertOperationOrSkip(
+                    insertOperationAndMcsOrSkip(
                         sum,
                         converter.convertOperationToLong(date),
+                        converter.convertMcsToLong(monthYear),
                         income,
                         description,
                         cardId,

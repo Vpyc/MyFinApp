@@ -13,7 +13,7 @@ class HomeViewModelFactory(context: Context) : ViewModelProvider.Factory {
     private val cardDao = db.getCardDao()
     private val categoryDao = db.getCategoryDao()
     private val mcsDao = db.getMCSDao()
-    private val repository = Repository(cardDao, categoryDao, operationDao, mcsDao)
+    private val repository = Repository(db, cardDao, categoryDao, operationDao, mcsDao)
     private val converter = DateConverter()
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return HomeViewModel(repository, converter) as T
