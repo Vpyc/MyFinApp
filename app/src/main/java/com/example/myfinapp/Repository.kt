@@ -46,6 +46,7 @@ class Repository(
         operationDao.insertOperation(operation)
 
     fun getAllOperationsSortedByDate() = operationDao.getAllOperationsSortedByDate()
+    fun getAllOperationsWithFormattedData() = operationDao.getAllOperationsWithFormattedData()
 
     suspend fun findOperationByAll(
         sum: Double,

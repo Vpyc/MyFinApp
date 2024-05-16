@@ -5,10 +5,10 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myfinapp.databinding.ItemOperationBinding
-import com.example.myfinapp.room.OperationEntity
+import com.example.myfinapp.room.OperationItem
 
 class OperationsAdapter :
-    ListAdapter<OperationEntity, OperationsAdapter.OperationViewHolder>(OperationsDiffCallback()) {
+    ListAdapter<OperationItem, OperationsAdapter.OperationViewHolder>(OperationsDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OperationViewHolder {
         val binding =
@@ -23,8 +23,8 @@ class OperationsAdapter :
 
     class OperationViewHolder(private val binding: ItemOperationBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(operation: OperationEntity) {
-            binding.textViewOperationDate.text = operation.date.toString()
+        fun bind(operation: OperationItem) {
+            binding.textViewOperationDate.text = operation.formattedDate
             binding.textViewOperationSum.text = operation.sum.toString()
             // Здесь вы можете настроить отображение других полей операции
         }

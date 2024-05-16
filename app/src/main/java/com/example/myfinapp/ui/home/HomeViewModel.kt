@@ -10,6 +10,7 @@ import com.example.myfinapp.room.CardEntity
 import com.example.myfinapp.room.CategoryEntity
 import com.example.myfinapp.room.MonthlyCategorySummaryEntity
 import com.example.myfinapp.room.OperationEntity
+import com.example.myfinapp.room.OperationItem
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
@@ -28,7 +29,7 @@ class HomeViewModel(private val repository: Repository, private val converter: D
     ViewModel() {
     private val mutex = Mutex()
 
-    private val _operationsList = MutableStateFlow(emptyList<OperationEntity>())
+    private val _operationsList = MutableStateFlow(emptyList<OperationItem>())
     val operationsList = _operationsList.asStateFlow()
 
     init {
@@ -37,8 +38,8 @@ class HomeViewModel(private val repository: Repository, private val converter: D
 
     private fun getOperations() {
         viewModelScope.launch {
-            repository.getAllOperationsSortedByDate().flowOn(Dispatchers.IO)
-                .collect { operations: List<OperationEntity> ->
+            repository.getAllOperationsWithFormattedData().flowOn(Dispatchers.IO)
+                .collect { operations: List<OperationItem> ->
                     _operationsList.update { operations }
                 }
         }

@@ -12,6 +12,7 @@ import androidx.room.RoomDatabase
         OperationEntity::class,
         MonthlyCategorySummaryEntity::class,
     ],
+    views = [OperationItem::class],
     version = 1
 )
 abstract class MyFinDb : RoomDatabase() {

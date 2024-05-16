@@ -54,6 +54,8 @@ interface OperationDao {
 
     @Query("SELECT * FROM operation ORDER BY date DESC")
     fun getAllOperationsSortedByDate(): Flow<List<OperationEntity>>
+    @Query("SELECT * FROM OperationItem")
+    fun getAllOperationsWithFormattedData(): Flow<List<OperationItem>>
 }
 
 @Dao
