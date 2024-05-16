@@ -52,7 +52,7 @@ interface OperationDao {
         categoryId: Long
     ): OperationEntity?
 
-    @Query("SELECT * FROM operation ORDER BY date")
+    @Query("SELECT * FROM operation ORDER BY date DESC")
     fun getAllOperationsSortedByDate(): Flow<List<OperationEntity>>
 }
 

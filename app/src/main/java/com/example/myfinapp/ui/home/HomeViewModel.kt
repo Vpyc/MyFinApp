@@ -3,7 +3,6 @@ package com.example.myfinapp.ui.home
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myfinapp.Repository
@@ -15,6 +14,10 @@ import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -25,7 +28,22 @@ class HomeViewModel(private val repository: Repository, private val converter: D
     ViewModel() {
     private val mutex = Mutex()
 
-    val _mcsList = MutableLiveData<List<MonthlyCategorySummaryEntity>>()
+    private val _operationsList = MutableStateFlow(emptyList<OperationEntity>())
+    val operationsList = _operationsList.asStateFlow()
+
+    init {
+        getOperations()
+    }
+
+    private fun getOperations() {
+        viewModelScope.launch {
+            repository.getAllOperationsSortedByDate().flowOn(Dispatchers.IO)
+                .collect { operations: List<OperationEntity> ->
+                    _operationsList.update { operations }
+                }
+        }
+    }
+
     private suspend fun insertCard(cardNumber: String): Long {
         return suspendCoroutine { continuation ->
             viewModelScope.launch(Dispatchers.IO) {
@@ -39,7 +57,7 @@ class HomeViewModel(private val repository: Repository, private val converter: D
 
     private suspend fun insertCategory(categoryName: String): Long {
         return suspendCoroutine { continuation ->
-            viewModelScope.launch(Dispatchers.IO)  {
+            viewModelScope.launch(Dispatchers.IO) {
                 val category = CategoryEntity(
                     categoryName = categoryName
                 )
@@ -56,7 +74,7 @@ class HomeViewModel(private val repository: Repository, private val converter: D
         cardId: Long,
         categoryId: Long
     ) {
-        viewModelScope.launch(Dispatchers.IO)  {
+        viewModelScope.launch(Dispatchers.IO) {
             val operation = OperationEntity(
                 sum = sum.toDouble(),
                 date = date,
@@ -68,7 +86,11 @@ class HomeViewModel(private val repository: Repository, private val converter: D
             repository.insertOperation(operation)
         }
     }
-    private suspend fun findMcsByDateAndCategoryId(date: Long, categoryId: Long): MonthlyCategorySummaryEntity? {
+
+    private suspend fun findMcsByDateAndCategoryId(
+        date: Long,
+        categoryId: Long
+    ): MonthlyCategorySummaryEntity? {
         return suspendCoroutine { continuation ->
             viewModelScope.launch {
                 continuation.resume(repository.findMcsByDateAndCategoryId(date, categoryId))
@@ -77,7 +99,12 @@ class HomeViewModel(private val repository: Repository, private val converter: D
         }
     }
 
-    private suspend fun updateOrInsertMcs(plus: String, minus: String, date: Long, categoryId: Long) {
+    private suspend fun updateOrInsertMcs(
+        plus: String,
+        minus: String,
+        date: Long,
+        categoryId: Long
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.withTransaction {
                 val mcs = findMcsByDateAndCategoryId(date, categoryId)
@@ -132,29 +159,34 @@ class HomeViewModel(private val repository: Repository, private val converter: D
         categoryId: Long
     ) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.withTransaction{
+            repository.withTransaction {
 
-                    val operation =
-                        repository.findOperationByDate(
-                            sum.toDouble(),
-                            date,
-                            income,
-                            description,
-                            cardId,
-                            categoryId
-                        )
-                    if (operation == null) {
-                        insertOperation(sum, date, income, description, cardId, categoryId)
-                        mutex.withLock {
-                            if(income) {
-                                updateOrInsertMcs( sum, "0", monthYear, categoryId)
-                                Log.d("Update plus", converter.convertMcsFromLong(monthYear) + " " + categoryId)
-                            }
-                            else{
-                                updateOrInsertMcs("0", sum, monthYear, categoryId)
-                                Log.d("Update minus", converter.convertMcsFromLong(monthYear) + " " + categoryId)
-                            }
+                val operation =
+                    repository.findOperationByAll(
+                        sum.toDouble(),
+                        date,
+                        income,
+                        description,
+                        cardId,
+                        categoryId
+                    )
+                if (operation == null) {
+                    insertOperation(sum, date, income, description, cardId, categoryId)
+                    mutex.withLock {
+                        if (income) {
+                            updateOrInsertMcs(sum, "0", monthYear, categoryId)
+                            Log.d(
+                                "Update plus",
+                                converter.convertMcsFromLong(monthYear) + " " + categoryId
+                            )
+                        } else {
+                            updateOrInsertMcs("0", sum, monthYear, categoryId)
+                            Log.d(
+                                "Update minus",
+                                converter.convertMcsFromLong(monthYear) + " " + categoryId
+                            )
                         }
+                    }
                 }
             }
         }

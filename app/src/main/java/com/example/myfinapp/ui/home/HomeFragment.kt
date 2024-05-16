@@ -6,12 +6,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myfinapp.databinding.FragmentHomeBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,6 +24,7 @@ class HomeFragment : Fragment() {
     private lateinit var contractPdf: ActivityResultLauncher<Intent>
     private lateinit var intent: Intent
     private lateinit var homeViewModel: HomeViewModel
+    private lateinit var adapter: OperationsAdapter
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -30,10 +32,15 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        homeViewModel = ViewModelProvider(this, HomeViewModelFactory(requireContext()))
-            .get(HomeViewModel::class.java)
+        homeViewModel = ViewModelProvider(
+            this,
+            HomeViewModelFactory(requireContext())
+        )[HomeViewModel::class.java]
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        adapter = OperationsAdapter()
+        binding.recyclerView.adapter = adapter
         intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         intent.type = "application/pdf"
         intent.addCategory(Intent.CATEGORY_OPENABLE)
@@ -45,19 +52,12 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        homeViewModel._mcsList.observe(viewLifecycleOwner) {
-            Toast.makeText(requireContext(), it.toString(), Toast.LENGTH_LONG).show()
+        lifecycleScope.launch {
+            homeViewModel.operationsList.collect { operations ->
+                adapter.submitList(operations)
+            }
         }
-        binding.button.setOnClickListener {
-        }
-        binding.button2.setOnClickListener {
-        }
-        binding.button3.setOnClickListener {
 
-        }
-        binding.button4.setOnClickListener {
-            homeViewModel.getAllOperations()
-        }
         binding.button5.setOnClickListener {
             contractPdf.launch(intent)
         }
