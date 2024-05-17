@@ -1,13 +1,10 @@
-package com.example.myfinapp.ui.dashboard
+package com.example.myfinapp.ui.chart
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myfinapp.Repository
 import com.example.myfinapp.room.McsItem
-import com.example.myfinapp.room.OperationItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

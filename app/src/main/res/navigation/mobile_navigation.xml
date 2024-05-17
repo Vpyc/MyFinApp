@@ -12,8 +12,8 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.example.myfinapp.ui.dashboard.ChartControlFragment"
+        android:id="@+id/navigation_chart"
+        android:name="com.example.myfinapp.ui.chart.ChartControlFragment"
         android:label="@string/title_dashboard"
         tools:layout="@layout/fragment_chart_control" />
 

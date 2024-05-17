@@ -1,4 +1,4 @@
-package com.example.myfinapp.ui.dashboard
+package com.example.myfinapp.ui.chart
 
 import android.os.Bundle
 import android.view.LayoutInflater

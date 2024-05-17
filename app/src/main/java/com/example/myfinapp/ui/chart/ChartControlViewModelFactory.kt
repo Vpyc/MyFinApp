@@ -1,11 +1,10 @@
-package com.example.myfinapp.ui.dashboard
+package com.example.myfinapp.ui.chart
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.myfinapp.Repository
 import com.example.myfinapp.room.MyFinDb
-import com.example.myfinapp.ui.home.DateConverter
 
 class ChartControlViewModelFactory(context: Context): ViewModelProvider.Factory {
     private val db = MyFinDb.getDb(context)
