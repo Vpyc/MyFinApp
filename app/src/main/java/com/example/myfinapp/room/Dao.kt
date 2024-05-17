@@ -54,6 +54,7 @@ interface OperationDao {
 
     @Query("SELECT * FROM operation ORDER BY date DESC")
     fun getAllOperationsSortedByDate(): Flow<List<OperationEntity>>
+
     @Query("SELECT * FROM OperationItem")
     fun getAllOperationsWithFormattedData(): Flow<List<OperationItem>>
 }
@@ -74,5 +75,8 @@ interface MCSDao {
 
     @Update(entity = MonthlyCategorySummaryEntity::class)
     suspend fun updateMcs(mcs: MonthlyCategorySummaryEntity)
+
+    @Query("SELECT * FROM McsItem")
+    fun getAllMcsWithFormattedData(): Flow<List<McsItem>>
 }
 
