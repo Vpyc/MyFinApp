@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ChartControlViewModel(val repository: Repository) : ViewModel() {
+class ChartControlViewModel(private val repository: Repository) : ViewModel() {
 
     private val _mcsList = MutableStateFlow(emptyList<McsItem>())
     val mcsList = _mcsList.asStateFlow()
