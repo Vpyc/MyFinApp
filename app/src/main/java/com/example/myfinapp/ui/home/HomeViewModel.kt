@@ -95,7 +95,6 @@ class HomeViewModel(private val repository: Repository, private val converter: D
         return suspendCoroutine { continuation ->
             viewModelScope.launch {
                 continuation.resume(repository.findMcsByDateAndCategoryId(date, categoryId))
-
             }
         }
     }

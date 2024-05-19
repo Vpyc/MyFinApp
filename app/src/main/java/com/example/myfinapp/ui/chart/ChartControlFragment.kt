@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.myfinapp.R
@@ -30,15 +29,17 @@ class ChartControlFragment : Fragment() {
         _binding = FragmentChartControlBinding.inflate(inflater, container, false)
         return binding.root
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewLifecycleOwner.lifecycleScope.launch {
+        lifecycleScope.launch {
             chartControlViewModel.mcsList.collect { mcs ->
                 val chartFragment = ChartFragment()
                 val bundle = Bundle()
                 bundle.putParcelableArrayList("mcs", ArrayList(mcs))
                 chartFragment.arguments = bundle
-                childFragmentManager.beginTransaction().replace(R.id.chart_fragment, chartFragment).commit()
+                childFragmentManager.beginTransaction().replace(R.id.chart_fragment, chartFragment)
+                    .commit()
             }
         }
     }
@@ -46,5 +47,10 @@ class ChartControlFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onResume() {
+        super.onResume()
+        chartControlViewModel.getMcs()
     }
 }

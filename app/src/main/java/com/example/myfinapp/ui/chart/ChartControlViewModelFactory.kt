@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.myfinapp.Repository
 import com.example.myfinapp.room.MyFinDb
 
-class ChartControlViewModelFactory(context: Context): ViewModelProvider.Factory {
+class ChartControlViewModelFactory(context: Context) : ViewModelProvider.Factory {
     private val db = MyFinDb.getDb(context)
     private val operationDao = db.getOperationDao()
     private val cardDao = db.getCardDao()

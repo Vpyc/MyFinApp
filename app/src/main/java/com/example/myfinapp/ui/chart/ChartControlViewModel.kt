@@ -18,10 +18,10 @@ class ChartControlViewModel(private val repository: Repository) : ViewModel() {
     val mcsList = _mcsList.asStateFlow()
 
     init {
-        getOperations()
+        getMcs()
     }
 
-    private fun getOperations() {
+    fun getMcs() {
         viewModelScope.launch {
             repository.getAllMcsWithFormattedData().flowOn(Dispatchers.IO)
                 .collect { mcs: List<McsItem> ->
