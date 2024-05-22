@@ -1,11 +1,15 @@
 package com.example.myfinapp.ui.home
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.LinearLayout
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
@@ -13,6 +17,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.myfinapp.databinding.FragmentHomeBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,13 +57,42 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val recyclerView = binding.recyclerView
+        val topMenu = binding.topMenu
+        var isMenuVisible = true
+        var scrollDistance = 0
+
+        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                scrollDistance += dy
+                if (scrollDistance > 50 && isMenuVisible) {
+                    isMenuVisible = false
+                    topMenu.animate().translationY(-topMenu.height.toFloat()).setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            super.onAnimationEnd(animation)
+                            topMenu.visibility = View.GONE
+                        }
+                    }).start()
+                } else if (scrollDistance < -50 && !isMenuVisible) {
+                    isMenuVisible = true
+                    topMenu.animate().translationY(0f).setListener(object : AnimatorListenerAdapter() {
+                        override fun onAnimationStart(animation: Animator) {
+                            super.onAnimationStart(animation)
+                            topMenu.visibility = View.VISIBLE
+                        }
+                    }).start()
+                }
+                if (scrollDistance < -50) scrollDistance = 0
+                if (scrollDistance > 50) scrollDistance = 0
+            }
+        })
         lifecycleScope.launch {
             homeViewModel.operationsList.collect { operations ->
                 adapter.submitList(operations)
             }
         }
 
-        binding.button5.setOnClickListener {
+        binding.uploadPdf.setOnClickListener {
             contractPdf.launch(intent)
         }
     }

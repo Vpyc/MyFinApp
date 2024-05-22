@@ -4,32 +4,28 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.fragment.app.Fragment
 import com.example.myfinapp.databinding.FragmentChartBinding
 import com.example.myfinapp.room.McsItem
-/*import com.github.mikephil.charting.charts.BarChart
-import com.github.mikephil.charting.data.BarData
-import com.github.mikephil.charting.data.BarDataSet
-import com.github.mikephil.charting.data.BarEntry*/
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import co.yml.charts.axis.AxisData
 import co.yml.charts.axis.DataCategoryOptions
 import co.yml.charts.common.model.Point
-import co.yml.charts.common.utils.DataUtils
 import co.yml.charts.ui.barchart.BarChart
 import co.yml.charts.ui.barchart.models.BarChartData
-import co.yml.charts.ui.barchart.models.BarChartType
 import co.yml.charts.ui.barchart.models.BarData
+import co.yml.charts.ui.barchart.models.BarStyle
 import com.example.myfinapp.R
 
 class ChartFragment : Fragment() {
@@ -44,18 +40,6 @@ class ChartFragment : Fragment() {
     ): View {
 
         _binding = FragmentChartBinding.inflate(inflater, container, false)
-//        val view =
-        /*binding.composeView.apply {
-            // Dispose of the Composition when the view's LifecycleOwner
-            // is destroyed
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                // In Compose world
-                MaterialTheme {
-                    Text("Hello Compose!")
-                }
-            }
-        }*/
         return binding.root
     }
 
@@ -67,78 +51,119 @@ class ChartFragment : Fragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 if (!mcs.isNullOrEmpty()){
-                    McsBarChart(mcs)
+                    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.background, // Используем цвет фона из текущей темы
+                            ) {
+                                McsBarChart(mcs, "Доходы")
+                            }
+                        }
+                    }
                 }
             }
-        }
     }
 
+
     @Composable
-    fun McsBarChart(mcs: ArrayList<McsItem>) {
+    fun McsBarChart(mcs: ArrayList<McsItem>, category: String) {
+        val chartData = when (category) {
+            "Расходы" -> {
+                createExpenseBarChartData(mcs)
+            }
+            "Доходы" -> {
+                createIncomeBarChartData(mcs)
+            }
+
+            else -> {emptyList()}
+        }
         val stepSize = 5
-        val barsData = createMcsBarChartData(mcs)/*DataUtils.getBarChartData(
-            listSize = 8,
-            maxRange = 8,
-            barChartType = BarChartType.VERTICAL,
-            dataCategoryOptions = DataCategoryOptions()
-        )*/
         val xAxisData = AxisData.Builder()
-            .axisStepSize(100.dp)
-            .steps(barsData.size - 1)
+            .startDrawPadding(30.dp)
+            .backgroundColor(Color.Transparent)
+            .shouldDrawAxisLineTillEnd(true)
+            .axisStepSize(30.dp)
+            .endPadding(30.dp)
+            .topPadding(30.dp)
+            .steps(chartData.size - 1)
             .bottomPadding(40.dp)
             .axisLabelAngle(20f)
-            .labelData {index -> barsData[index].label}
+            .labelData { index -> chartData[index].label }
             .axisLineColor(MaterialTheme.colorScheme.tertiary)
             .axisLabelColor(MaterialTheme.colorScheme.tertiary)
             .build()
+
+        val maxRange = chartData.maxOf { it.point.y }
+
         val yAxisData = AxisData.Builder()
             .steps(stepSize)
+            .backgroundColor(Color.Transparent)
             .labelAndAxisLinePadding(20.dp)
-            .axisOffset(20.dp)
-            .labelData {index -> (index * (100 /stepSize)).toString()}
+            .axisOffset(30.dp)
+            .labelData { index -> (index * (maxRange / stepSize)).toInt().toString() } // Округляем до целых чисел
             .axisLineColor(MaterialTheme.colorScheme.tertiary)
             .axisLabelColor(MaterialTheme.colorScheme.tertiary)
             .build()
+
+        val barStyle = BarStyle(paddingBetweenBars = 20.dp, barWidth = 25.dp, cornerRadius = 5.dp)
+
         val barChartData = BarChartData(
-            chartData = barsData,
+            chartData = chartData,
             xAxisData = xAxisData,
             yAxisData = yAxisData,
-            backgroundColor = MaterialTheme.colorScheme.surface
+            backgroundColor = MaterialTheme.colorScheme.surface,
+            barStyle = barStyle
         )
+
         BarChart(
             modifier = Modifier
-                .height(250.dp),
+                .fillMaxWidth()
+                .height(350.dp),
             barChartData = barChartData
         )
     }
-    fun createMcsBarChartData(mcs: ArrayList<McsItem>): List<BarData> {
-        val barDataList = arrayListOf<BarData>()
 
-        for (index in mcs.indices) {
-            val item = mcs[index]
-            val plusValue = item.plus.toFloat()
-            val minusValue = item.minus.toFloat() * -1 // Преобразуем минусы
+    private fun createIncomeBarChartData(mcs: ArrayList<McsItem>): List<BarData> {
+        val incomeData = mutableListOf<BarData>()
 
-            val point = Point(
-                index.toFloat(),
-                plusValue
-            )
+        val uniqueDates = mcs.map { it.formattedDate.orEmpty() }.distinct()
 
-            val barData = item.formattedDate?.let {
+        for ((index, date) in uniqueDates.withIndex()) {
+            val dateItems = mcs.filter { it.formattedDate.orEmpty() == date }
+
+            val totalPlus = dateItems.sumByDouble { it.plus }.toFloat()
+
+            incomeData.add(
                 BarData(
-                    point = point,
-                    color = if (plusValue >= 0) Color.Green else Color.Red, // Зеленый для плюсов, красный для минусов
+                    point = Point(index.toFloat(), totalPlus),
+                    color = Color.Green,
                     dataCategoryOptions = DataCategoryOptions(),
-                    label = it
+                    label = date
                 )
-            }
-
-            if (barData != null) {
-                barDataList.add(barData)
-            }
+            )
         }
+        return incomeData
+    }
 
-        return barDataList
+    private fun createExpenseBarChartData(mcs: ArrayList<McsItem>): List<BarData> {
+        val expenseData = mutableListOf<BarData>()
+
+        val uniqueDates = mcs.map { it.formattedDate.orEmpty() }.distinct()
+
+        for ((index, date) in uniqueDates.withIndex()) {
+            val dateItems = mcs.filter { it.formattedDate.orEmpty() == date }
+
+            val totalMinus = dateItems.sumByDouble { it.minus }.toFloat()
+
+            expenseData.add(
+                BarData(
+                    point = Point(index.toFloat(), totalMinus),
+                    color = Color.Red,
+                    dataCategoryOptions = DataCategoryOptions(),
+                    label = date
+                )
+            )
+        }
+        return expenseData
     }
 
 
@@ -147,5 +172,4 @@ class ChartFragment : Fragment() {
         _binding = null
 
     }
-
 }
