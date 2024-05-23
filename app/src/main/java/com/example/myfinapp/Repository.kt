@@ -33,9 +33,10 @@ class Repository(
     suspend fun findCategoryByCategoryName(categoryName: String) =
         categoryDao.findByCategoryName(categoryName)
 
+    fun getAllCategories() = categoryDao.getAllCategories()
+    fun getAllCards() = cardDao.getAllCards()
     suspend fun insertMcs(mcs: MonthlyCategorySummaryEntity) = mcsDao.insertMcs(mcs)
 
-    suspend fun getAllMcs() = mcsDao.getAllMCS()
     fun getAllMcsWithFormattedData() = mcsDao.getAllMcsWithFormattedData()
 
     suspend fun findMcsByDateAndCategoryId(date: Long, categoryId: Long) =

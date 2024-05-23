@@ -92,7 +92,7 @@ class HomeFragment : Fragment() {
             }
         }
         binding.addOperationButton.setOnClickListener {
-            showOperationFragment()
+            showOperationFragment(false)
         }
 
         binding.uploadPdf.setOnClickListener {
@@ -100,7 +100,7 @@ class HomeFragment : Fragment() {
         }
 
         binding.filter.setOnClickListener {
-            showOperationFragment(false)
+            showOperationFragment()
         }
     }
 

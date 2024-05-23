@@ -31,16 +31,56 @@ class HomeViewModel(private val repository: Repository, private val converter: D
 
     private val _operationsList = MutableStateFlow(emptyList<OperationItem>())
     val operationsList = _operationsList.asStateFlow()
+    private val _categoryList = MutableStateFlow(emptyList<CategoryEntity>())
+    val categoryList = _categoryList.asStateFlow()
+    private val _cardList = MutableStateFlow(emptyList<CardEntity>())
+    val cardList = _cardList.asStateFlow()
 
     init {
         getOperations()
+        getCards()
+        getCategories()
     }
 
     private fun getOperations() {
         viewModelScope.launch {
             repository.getAllOperationsWithFormattedData().flowOn(Dispatchers.IO)
                 .collect { operations: List<OperationItem> ->
+                    Log.d("Operations", operations.toString())
                     _operationsList.update { operations }
+                }
+            repository.getAllCards().flowOn(Dispatchers.IO)
+                .collect { cards: List<CardEntity> ->
+                    Log.d("Card", cards.toString())
+                    _cardList.update { cards }
+                }
+            repository.getAllCategories().flowOn(Dispatchers.IO)
+                .collect { categories: List<CategoryEntity> ->
+                    Log.d("Categories", categories.toString())
+                    _categoryList.update { categories }
+                }
+        }
+    }
+    private fun getCards() {
+        viewModelScope.launch {
+            repository.getAllCards().flowOn(Dispatchers.IO)
+                .collect { cards: List<CardEntity> ->
+                    Log.d("Card", cards.toString())
+                    _cardList.update { cards }
+                }
+            repository.getAllCategories().flowOn(Dispatchers.IO)
+                .collect { categories: List<CategoryEntity> ->
+                    Log.d("Categories", categories.toString())
+                    _categoryList.update { categories }
+                }
+        }
+    }
+    private fun getCategories() {
+        viewModelScope.launch {
+            repository.getAllCategories().flowOn(Dispatchers.IO)
+                .collect { categories: List<CategoryEntity> ->
+                    Log.d("Categories", categories.toString())
+                    _categoryList.update { categories }
                 }
         }
     }

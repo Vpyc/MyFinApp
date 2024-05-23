@@ -12,7 +12,7 @@ interface CardDao {
     suspend fun insertCard(card: CardEntity): Long
 
     @Query("SELECT * FROM card")
-    fun getAllCards(): List<CardEntity>
+    fun getAllCards(): Flow<List<CardEntity>>
 
     @Query("SELECT id FROM card WHERE card_number = :name")
     suspend fun findByCardNumber(name: String): Long?
@@ -24,7 +24,7 @@ interface CategoryDao {
     suspend fun insertCategory(category: CategoryEntity): Long
 
     @Query("SELECT * FROM category")
-    fun getAllCategories(): List<CategoryEntity>
+    fun getAllCategories(): Flow<List<CategoryEntity>>
 
     @Query("SELECT id FROM category WHERE category_name = :name")
     suspend fun findByCategoryName(name: String): Long?
@@ -34,9 +34,6 @@ interface CategoryDao {
 interface OperationDao {
     @Insert(entity = OperationEntity::class)
     suspend fun insertOperation(operation: OperationEntity)
-
-    @Query("SELECT * FROM operation")
-    suspend fun getAllOperations(): List<OperationEntity>
 
     @Query(
         "SELECT * FROM operation WHERE sum = :sum AND date = :date " +

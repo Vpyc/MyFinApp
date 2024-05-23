@@ -55,7 +55,7 @@ class ChartFragment : Fragment() {
                         Surface(
                             color = MaterialTheme.colorScheme.background, // Используем цвет фона из текущей темы
                         ) {
-                            McsBarChart(mcs, "Доходы")
+                            McsBarChart(mcs, "Расходы")
                         }
                     }
                 }

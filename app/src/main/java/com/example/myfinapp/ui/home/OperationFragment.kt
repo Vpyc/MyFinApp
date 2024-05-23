@@ -2,17 +2,21 @@ package com.example.myfinapp.ui.home
 
 import android.app.AlertDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CalendarView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.example.myfinapp.R
 import com.example.myfinapp.databinding.FragmentOperationBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlinx.coroutines.launch
 
 class OperationFragment : BottomSheetDialogFragment() {
     private lateinit var homeViewModel: HomeViewModel
@@ -49,6 +53,25 @@ class OperationFragment : BottomSheetDialogFragment() {
             params.topToBottom = binding.editTextComment.id
             params.horizontalBias = 0.5f
         }
+        lifecycleScope.launch {
+            homeViewModel.categoryList.collect { categories ->
+                // Обновление адаптера Spinner с данными из categoryList
+                val categoryNames = categories.map { it.categoryName }
+                Log.d("OperationFragment", categoryNames.toString())
+                val categoryAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categoryNames)
+                binding.spinnerCategory.adapter = categoryAdapter
+            }
+        }
+        lifecycleScope.launch {
+            homeViewModel.cardList.collect { cards ->
+                // Обновление адаптера Spinner с данными из cardList
+                val cardNumbers = cards.map { it.cardNumber }
+                Log.d("OperationFragment", cardNumbers.toString())
+                val cardAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, cardNumbers)
+                binding.spinnerCard.adapter = cardAdapter
+            }
+        }
+
         editTextDate.setOnClickListener {
             showDatePickerDialog()
         }
