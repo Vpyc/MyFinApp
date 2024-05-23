@@ -25,7 +25,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class HomeViewModel(private val repository: Repository, private val converter: DateConverter) :
+class HomeViewModel(private val repository: Repository, val converter: DateConverter) :
     ViewModel() {
     private val mutex = Mutex()
 
@@ -107,7 +107,7 @@ class HomeViewModel(private val repository: Repository, private val converter: D
         }
     }
 
-    private fun insertOperation(
+    fun insertOperation(
         sum: String,
         date: Long,
         income: Boolean,
@@ -165,7 +165,7 @@ class HomeViewModel(private val repository: Repository, private val converter: D
         }
     }
 
-    private suspend fun findCardId(cardNumber: String): Long {
+   suspend fun findCardId(cardNumber: String): Long {
         return suspendCoroutine { continuation ->
             viewModelScope.launch {
                 var cardId = repository.findCardByCardNumber(cardNumber)
@@ -177,7 +177,7 @@ class HomeViewModel(private val repository: Repository, private val converter: D
         }
     }
 
-    private suspend fun findCategoryId(categoryName: String): Long {
+    suspend fun findCategoryId(categoryName: String): Long {
         return suspendCoroutine { continuation ->
             viewModelScope.launch {
                 var categoryId = repository.findCategoryByCategoryName(categoryName)

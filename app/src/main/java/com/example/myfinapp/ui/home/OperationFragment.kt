@@ -13,10 +13,12 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.example.myfinapp.R
 import com.example.myfinapp.databinding.FragmentOperationBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class OperationFragment : BottomSheetDialogFragment() {
     private lateinit var homeViewModel: HomeViewModel
@@ -72,9 +74,43 @@ class OperationFragment : BottomSheetDialogFragment() {
             }
         }
 
+        buttonSave.setOnClickListener {
+            lifecycleScope.launch {
+                val category = homeViewModel.findCategoryId(binding.spinnerCategory.selectedItem.toString())
+                val card = homeViewModel.findCardId(binding.spinnerCard.selectedItem.toString())
+                val date = pickDateWithTime(editTextDate.text.toString())
+                val flag = getRadioButtonFlag()
+                homeViewModel.insertOperation(
+                    binding.editTextSum.text.toString(),
+                    date,
+                    flag,
+                    binding.editTextComment.text.toString(),
+                    card,
+                    category
+                )
+            }
+            findNavController().popBackStack()
+        }
+
         editTextDate.setOnClickListener {
             showDatePickerDialog()
         }
+    }
+    private fun getRadioButtonFlag():Boolean {
+        val radioGroup = binding.radioGroupType
+        val radioButtonFlag = when (radioGroup.checkedRadioButtonId) {
+            R.id.radioButtonIncome -> true
+            R.id.radioButtonExpense -> false
+            else -> false
+        }
+        return radioButtonFlag
+    }
+    private fun pickDateWithTime(date: String): Long {
+        val currentTime = Calendar.getInstance()
+        val hour = currentTime.get(Calendar.HOUR_OF_DAY)
+        val minute = currentTime.get(Calendar.MINUTE)
+        val dateTimeString = "$date $hour:$minute"
+        return homeViewModel.converter.convertOperationToLong(dateTimeString)
     }
 
     private fun showDatePickerDialog() {
