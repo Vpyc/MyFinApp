@@ -1,90 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-        <!-- Выбор суммы -->
-        <EditText
+    <!-- Выбор суммы -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayoutSum"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:boxBackgroundColor="@color/cardview_light_background"
+        app:endIconContentDescription="Currency Symbol"
+        app:endIconDrawable="@drawable/ic_currency_ruble"
+        app:endIconMode="custom"
+        app:hintEnabled="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editTextSum"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:hint="0"
+            android:inputType="numberDecimal"
+            android:paddingBottom="20dp"
+            android:textSize="20sp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Выбор типа операции (расход или доход) -->
+    <RadioGroup
+        android:id="@+id/radioGroupType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textInputLayoutSum">
+
+        <RadioButton
+            android:id="@+id/radioButtonIncome"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Сумма"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="Доход" />
 
-        <!-- Выбор типа операции (расход или доход) -->
-        <RadioGroup
-            android:id="@+id/radioGroupType"
+        <RadioButton
+            android:id="@+id/radioButtonExpense"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/editTextSum"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:layout_weight="1"
+            android:text="Расход" />
+    </RadioGroup>
 
-            <RadioButton
-                android:id="@+id/radioButtonIncome"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Доход" />
+    <!-- Выбор категории -->
+    <Spinner
+        android:id="@+id/spinnerCategory"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/radioGroupType" />
 
-            <RadioButton
-                android:id="@+id/radioButtonExpense"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Расход" />
-        </RadioGroup>
+    <!-- Выбор карты -->
+    <Spinner
+        android:id="@+id/spinnerCard"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/spinnerCategory" />
+    <!-- Выбор даты -->
+    <EditText
+        android:id="@+id/editTextDate"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="4dp"
+        android:clickable="true"
+        android:focusable="false"
+        android:hint="Выбрать дату"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/spinnerCard" />
+    <!-- Комментарий -->
+    <EditText
+        android:id="@+id/editTextComment"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:hint="Комментарий"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/editTextDate" />
 
-        <!-- Выбор категории -->
-        <Spinner
-            android:id="@+id/spinnerCategory"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/radioGroupType" />
+    <!-- Кнопка сохранения -->
 
-        <!-- Выбор карты -->
-        <Spinner
-            android:id="@+id/spinnerCard"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/spinnerCategory" />
+    <Button
+        android:id="@+id/buttonSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Сохранить"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.9"
+        app:layout_constraintStart_toStartOf="@+id/editTextComment"
+        app:layout_constraintTop_toBottomOf="@id/editTextComment"
+        app:layout_constraintVertical_bias="0.1" />
 
-        <!-- Выбор даты -->
-        <Button
-            android:id="@+id/buttonPickDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Выбрать дату"
-            app:layout_constraintTop_toBottomOf="@id/spinnerCard"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+    <Button
+        android:id="@+id/buttonDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Удалить"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextComment"
+        app:layout_constraintVertical_bias="0.1" />
 
-        <!-- Поле для комментария -->
-        <EditText
-            android:id="@+id/editTextComment"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:hint="Комментарий"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/buttonPickDate" />
-
-        <!-- Кнопка сохранения -->
-        <Button
-            android:id="@+id/buttonSave"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
-            android:text="Сохранить"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.501"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/editTextComment" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -8,8 +8,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.LinearLayout
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
@@ -67,20 +65,22 @@ class HomeFragment : Fragment() {
                 scrollDistance += dy
                 if (scrollDistance > 50 && isMenuVisible) {
                     isMenuVisible = false
-                    topMenu.animate().translationY(-topMenu.height.toFloat()).setListener(object : AnimatorListenerAdapter() {
-                        override fun onAnimationEnd(animation: Animator) {
-                            super.onAnimationEnd(animation)
-                            topMenu.visibility = View.GONE
-                        }
-                    }).start()
+                    topMenu.animate().translationY(-topMenu.height.toFloat())
+                        .setListener(object : AnimatorListenerAdapter() {
+                            override fun onAnimationEnd(animation: Animator) {
+                                super.onAnimationEnd(animation)
+                                topMenu.visibility = View.GONE
+                            }
+                        }).start()
                 } else if (scrollDistance < -50 && !isMenuVisible) {
                     isMenuVisible = true
-                    topMenu.animate().translationY(0f).setListener(object : AnimatorListenerAdapter() {
-                        override fun onAnimationStart(animation: Animator) {
-                            super.onAnimationStart(animation)
-                            topMenu.visibility = View.VISIBLE
-                        }
-                    }).start()
+                    topMenu.animate().translationY(0f)
+                        .setListener(object : AnimatorListenerAdapter() {
+                            override fun onAnimationStart(animation: Animator) {
+                                super.onAnimationStart(animation)
+                                topMenu.visibility = View.VISIBLE
+                            }
+                        }).start()
                 }
                 if (scrollDistance < -50) scrollDistance = 0
                 if (scrollDistance > 50) scrollDistance = 0
@@ -91,15 +91,30 @@ class HomeFragment : Fragment() {
                 adapter.submitList(operations)
             }
         }
+        binding.addOperationButton.setOnClickListener {
+            showOperationFragment()
+        }
 
         binding.uploadPdf.setOnClickListener {
             contractPdf.launch(intent)
+        }
+
+        binding.filter.setOnClickListener {
+            showOperationFragment(false)
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun showOperationFragment(visible: Boolean = true) {
+        val operationFragment = OperationFragment()
+        val args = Bundle()
+        args.putBoolean("isButtonVisible", visible) // Установите значение видимости кнопки
+        operationFragment.arguments = args
+        operationFragment.show(parentFragmentManager, "OperationFragment")
     }
 
     private fun handlePDFFileSelection(result: ActivityResult) {

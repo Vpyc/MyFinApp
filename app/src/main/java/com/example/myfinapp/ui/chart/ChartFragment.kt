@@ -9,9 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.fragment.app.Fragment
-import com.example.myfinapp.databinding.FragmentChartBinding
-import com.example.myfinapp.room.McsItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -19,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
+import androidx.fragment.app.Fragment
 import co.yml.charts.axis.AxisData
 import co.yml.charts.axis.DataCategoryOptions
 import co.yml.charts.common.model.Point
@@ -27,6 +25,8 @@ import co.yml.charts.ui.barchart.models.BarChartData
 import co.yml.charts.ui.barchart.models.BarData
 import co.yml.charts.ui.barchart.models.BarStyle
 import com.example.myfinapp.R
+import com.example.myfinapp.databinding.FragmentChartBinding
+import com.example.myfinapp.room.McsItem
 
 class ChartFragment : Fragment() {
     private var _binding: FragmentChartBinding? = null
@@ -50,17 +50,17 @@ class ChartFragment : Fragment() {
         composeView.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                if (!mcs.isNullOrEmpty()){
+                if (!mcs.isNullOrEmpty()) {
                     CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
-                            Surface(
-                                color = MaterialTheme.colorScheme.background, // Используем цвет фона из текущей темы
-                            ) {
-                                McsBarChart(mcs, "Доходы")
-                            }
+                        Surface(
+                            color = MaterialTheme.colorScheme.background, // Используем цвет фона из текущей темы
+                        ) {
+                            McsBarChart(mcs, "Доходы")
                         }
                     }
                 }
             }
+        }
     }
 
 
@@ -70,11 +70,14 @@ class ChartFragment : Fragment() {
             "Расходы" -> {
                 createExpenseBarChartData(mcs)
             }
+
             "Доходы" -> {
                 createIncomeBarChartData(mcs)
             }
 
-            else -> {emptyList()}
+            else -> {
+                emptyList()
+            }
         }
         val stepSize = 5
         val xAxisData = AxisData.Builder()
@@ -99,7 +102,9 @@ class ChartFragment : Fragment() {
             .backgroundColor(Color.Transparent)
             .labelAndAxisLinePadding(20.dp)
             .axisOffset(30.dp)
-            .labelData { index -> (index * (maxRange / stepSize)).toInt().toString() } // Округляем до целых чисел
+            .labelData { index ->
+                (index * (maxRange / stepSize)).toInt().toString()
+            } // Округляем до целых чисел
             .axisLineColor(MaterialTheme.colorScheme.tertiary)
             .axisLabelColor(MaterialTheme.colorScheme.tertiary)
             .build()
@@ -130,7 +135,7 @@ class ChartFragment : Fragment() {
         for ((index, date) in uniqueDates.withIndex()) {
             val dateItems = mcs.filter { it.formattedDate.orEmpty() == date }
 
-            val totalPlus = dateItems.sumByDouble { it.plus }.toFloat()
+            val totalPlus = dateItems.sumOf { it.plus }.toFloat()
 
             incomeData.add(
                 BarData(
@@ -152,7 +157,7 @@ class ChartFragment : Fragment() {
         for ((index, date) in uniqueDates.withIndex()) {
             val dateItems = mcs.filter { it.formattedDate.orEmpty() == date }
 
-            val totalMinus = dateItems.sumByDouble { it.minus }.toFloat()
+            val totalMinus = dateItems.sumOf { it.minus }.toFloat()
 
             expenseData.add(
                 BarData(
