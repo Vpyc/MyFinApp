@@ -29,7 +29,7 @@ class HomeViewModel(private val repository: Repository, val converter: DateConve
     ViewModel() {
     private val mutex = Mutex()
 
-    private val _operationsList = MutableStateFlow(emptyList<OperationItem>())
+    private val _operationsList = MutableStateFlow(emptyList<OperationGroup>())
     val operationsList = _operationsList.asStateFlow()
     private val _categoryList = MutableStateFlow(emptyList<CategoryEntity>())
     val categoryList = _categoryList.asStateFlow()
@@ -46,18 +46,18 @@ class HomeViewModel(private val repository: Repository, val converter: DateConve
         viewModelScope.launch {
             repository.getAllOperationsWithFormattedData().flowOn(Dispatchers.IO)
                 .collect { operations: List<OperationItem> ->
-                    Log.d("Operations", operations.toString())
-                    _operationsList.update { operations }
-                }
-            repository.getAllCards().flowOn(Dispatchers.IO)
-                .collect { cards: List<CardEntity> ->
-                    Log.d("Card", cards.toString())
-                    _cardList.update { cards }
-                }
-            repository.getAllCategories().flowOn(Dispatchers.IO)
-                .collect { categories: List<CategoryEntity> ->
-                    Log.d("Categories", categories.toString())
-                    _categoryList.update { categories }
+                    val operationGroups = mutableListOf<OperationGroup>()
+                    operations.groupBy { it.formattedDate.substring(0, 10) }
+                        .forEach { (dateString, dateOperations) ->
+                            operationGroups.add(OperationGroup(dateString, dateOperations))
+                        }
+                    Log.d("Group", "Start update")
+
+                    _operationsList.update { operationGroups }
+                    _operationsList.value.size
+                    Log.d("Group", "End update")
+                    Log.d("Operations", operationsList.value.toString())
+                    Log.d("Category", categoryList.value.toString())
                 }
         }
     }
@@ -67,11 +67,6 @@ class HomeViewModel(private val repository: Repository, val converter: DateConve
                 .collect { cards: List<CardEntity> ->
                     Log.d("Card", cards.toString())
                     _cardList.update { cards }
-                }
-            repository.getAllCategories().flowOn(Dispatchers.IO)
-                .collect { categories: List<CategoryEntity> ->
-                    Log.d("Categories", categories.toString())
-                    _categoryList.update { categories }
                 }
         }
     }
@@ -330,6 +325,10 @@ class HomeViewModel(private val repository: Repository, val converter: DateConve
             }
         }
         return "" // Если не нашли номер карты, то возвращаем пустую строку
+    }
+    override fun onCleared() {
+        Log.d("HomeViewModel", "onCleared")
+        super.onCleared()
     }
 
 }

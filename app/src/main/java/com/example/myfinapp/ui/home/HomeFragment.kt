@@ -18,6 +18,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myfinapp.databinding.FragmentHomeBinding
+import com.xwray.groupie.GroupAdapter
+import com.xwray.groupie.GroupieViewHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,7 +30,6 @@ class HomeFragment : Fragment() {
     private lateinit var contractPdf: ActivityResultLauncher<Intent>
     private lateinit var intent: Intent
     private lateinit var homeViewModel: HomeViewModel
-    private lateinit var adapter: OperationsAdapter
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -43,8 +44,6 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = OperationsAdapter()
-        binding.recyclerView.adapter = adapter
         intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
         intent.type = "application/pdf"
         intent.addCategory(Intent.CATEGORY_OPENABLE)
@@ -87,11 +86,24 @@ class HomeFragment : Fragment() {
                 if (scrollDistance > 50) scrollDistance = 0
             }
         })
+        val groupAdapter = GroupAdapter<GroupieViewHolder>()
         lifecycleScope.launch {
-            homeViewModel.operationsList.collect { operations ->
-                Log.d("operations", operations.toString())
-                adapter.submitList(operations)
+            homeViewModel.operationsList.collect { operationGroups ->
+                Log.d("HomeFragment", "OperationGroups: $operationGroups")
+                groupAdapter.clear()
+
+                for (operationGroup in operationGroups) {
+                    val operationGroupItem = OperationGroupItem(operationGroup)
+                    groupAdapter.add(operationGroupItem)
+
+                    for (operation in operationGroup.operations) {
+                        val operationViewItem = OperationViewItem(operation)
+                        groupAdapter.add(operationViewItem)
+                    }
+                }
+                recyclerView.adapter = groupAdapter
             }
+
         }
         binding.addOperationButton.setOnClickListener {
             showOperationFragment(false)

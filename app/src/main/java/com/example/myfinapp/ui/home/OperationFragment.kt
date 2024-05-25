@@ -89,7 +89,6 @@ class OperationFragment : BottomSheetDialogFragment() {
                     category
                 )
             }
-            findNavController().popBackStack()
         }
 
         editTextDate.setOnClickListener {

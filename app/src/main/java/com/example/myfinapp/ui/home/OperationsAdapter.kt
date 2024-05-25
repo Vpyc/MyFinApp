@@ -1,32 +1,34 @@
 package com.example.myfinapp.ui.home
 
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
+import android.view.View
+import com.example.myfinapp.R
 import com.example.myfinapp.databinding.ItemOperationBinding
+import com.example.myfinapp.databinding.ItemOperationGroupBinding
 import com.example.myfinapp.room.OperationItem
+import com.xwray.groupie.viewbinding.BindableItem
 
-class OperationsAdapter :
-    ListAdapter<OperationItem, OperationsAdapter.OperationViewHolder>(OperationsDiffCallback()) {
+class OperationGroupItem(private val operationGroup: OperationGroup) : BindableItem<ItemOperationGroupBinding>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OperationViewHolder {
-        val binding =
-            ItemOperationBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return OperationViewHolder(binding)
+    override fun bind(binding: ItemOperationGroupBinding, position: Int) {
+        binding.textViewDate.text = operationGroup.date
     }
-
-    override fun onBindViewHolder(holder: OperationViewHolder, position: Int) {
-        val operation = getItem(position)
-        holder.bind(operation)
-    }
-
-    class OperationViewHolder(private val binding: ItemOperationBinding) :
-        RecyclerView.ViewHolder(binding.root) {
-        fun bind(operation: OperationItem) {
-            binding.textViewOperationDate.text = operation.formattedDate
-            binding.textViewOperationSum.text = operation.sum.toString()
-            // Здесь вы можете настроить отображение других полей операции
-        }
+    override fun getLayout() = R.layout.item_operation_group
+    override fun initializeViewBinding(view: View): ItemOperationGroupBinding {
+        return ItemOperationGroupBinding.bind(view)
     }
 }
+class OperationViewItem(private val operationItem: OperationItem) : BindableItem<ItemOperationBinding>() {
+
+    override fun bind(binding: ItemOperationBinding, position: Int) {
+        binding.textViewOperationDate.text = operationItem.formattedDate
+        binding.textViewOperationSum.text = operationItem.sum.toString()
+    }
+    override fun getLayout() = R.layout.item_operation
+    override fun initializeViewBinding(view: View): ItemOperationBinding {
+        return ItemOperationBinding.bind(view)
+    }
+}
+class OperationGroup(
+    val date: String,
+    val operations: List<OperationItem>
+)
