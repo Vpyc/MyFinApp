@@ -91,8 +91,16 @@ class HomeFragment : Fragment() {
             homeViewModel.operationsList.collect { operationGroups ->
                 Log.d("HomeFragment", "OperationGroups: $operationGroups")
                 groupAdapter.clear()
+                val categoryNames = "Все"
+                val cardNames = "Все"
+                val income = null
+                val filteredOperationGroups = filterOperationGroups(
+                    operationGroups,
+                    categoryNames,
+                    cardNames,
+                    income)
 
-                for (operationGroup in operationGroups) {
+                for (operationGroup in filteredOperationGroups) {
                     val operationGroupItem = OperationGroupItem(operationGroup)
                     groupAdapter.add(operationGroupItem)
 
@@ -103,7 +111,81 @@ class HomeFragment : Fragment() {
                 }
                 recyclerView.adapter = groupAdapter
             }
+        }
+        lifecycleScope.launch {
+            homeViewModel.selectedIncome.collect { income ->
+                Log.d("HomeFragment", "Income: $income")
+                val operationGroups = homeViewModel.operationsList.value
+                groupAdapter.clear()
+                val categoryNames = homeViewModel.selectedCategory.value
+                val cardNames = homeViewModel.selectedCard.value
+                val filteredOperationGroups = filterOperationGroups(
+                    operationGroups,
+                    categoryNames,
+                    cardNames,
+                    income
+                )
+                for (operationGroup in filteredOperationGroups) {
+                    val operationGroupItem = OperationGroupItem(operationGroup)
+                    groupAdapter.add(operationGroupItem)
 
+                    for (operation in operationGroup.operations) {
+                        val operationViewItem = OperationViewItem(operation)
+                        groupAdapter.add(operationViewItem)
+                    }
+                }
+                recyclerView.adapter = groupAdapter
+            }
+        }
+        lifecycleScope.launch {
+            homeViewModel.selectedCategory.collect { categoryNames ->
+                Log.d("HomeFragment", "CategoryNames: $categoryNames")
+                val operationGroups = homeViewModel.operationsList.value
+                groupAdapter.clear()
+                val income = homeViewModel.selectedIncome.value
+                val cardNames = homeViewModel.selectedCard.value
+                val filteredOperationGroups = filterOperationGroups(
+                    operationGroups,
+                    categoryNames,
+                    cardNames,
+                    income
+                )
+                for (operationGroup in filteredOperationGroups) {
+                    val operationGroupItem = OperationGroupItem(operationGroup)
+                    groupAdapter.add(operationGroupItem)
+
+                    for (operation in operationGroup.operations) {
+                        val operationViewItem = OperationViewItem(operation)
+                        groupAdapter.add(operationViewItem)
+                    }
+                }
+                recyclerView.adapter = groupAdapter
+            }
+        }
+        lifecycleScope.launch {
+            homeViewModel.selectedCard.collect { cardNames ->
+                Log.d("HomeFragment", "CardNames: $cardNames")
+                val operationGroups = homeViewModel.operationsList.value
+                groupAdapter.clear()
+                val income = homeViewModel.selectedIncome.value
+                val categoryNames = homeViewModel.selectedCategory.value
+                val filteredOperationGroups = filterOperationGroups(
+                    operationGroups,
+                    categoryNames,
+                    cardNames,
+                    income
+                )
+                for (operationGroup in filteredOperationGroups) {
+                    val operationGroupItem = OperationGroupItem(operationGroup)
+                    groupAdapter.add(operationGroupItem)
+
+                    for (operation in operationGroup.operations) {
+                        val operationViewItem = OperationViewItem(operation)
+                        groupAdapter.add(operationViewItem)
+                    }
+                }
+                recyclerView.adapter = groupAdapter
+            }
         }
         binding.addOperationButton.setOnClickListener {
             showOperationFragment(false)
@@ -114,8 +196,24 @@ class HomeFragment : Fragment() {
         }
 
         binding.filter.setOnClickListener {
-            showOperationFragment()
+            val filterFragment = FilterFragment()
+            filterFragment.show(parentFragmentManager, "FilterFragment")
         }
+    }
+    private fun filterOperationGroups(
+        operationGroups: List<OperationGroup>,
+        categoryName: String,
+        cardName: String,
+        income: Boolean?
+    ): List<OperationGroup> {
+        return operationGroups.map { group ->
+            val filteredOperations = group.operations.filter { operation ->
+                (categoryName == "Все" || operation.categoryName in categoryName) &&
+                        (cardName == "Все" || operation.cardNumber in cardName) &&
+                        (income == null || operation.income == income)
+            }
+            OperationGroup(group.date, filteredOperations)
+        }.filter { group -> group.operations.isNotEmpty() }
     }
 
     override fun onDestroyView() {

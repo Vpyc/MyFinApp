@@ -9,11 +9,11 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CalendarView
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import com.example.myfinapp.R
 import com.example.myfinapp.databinding.FragmentOperationBinding
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -60,7 +60,11 @@ class OperationFragment : BottomSheetDialogFragment() {
                 // Обновление адаптера Spinner с данными из categoryList
                 val categoryNames = categories.map { it.categoryName }
                 Log.d("OperationFragment", categoryNames.toString())
-                val categoryAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categoryNames)
+                val categoryAdapter = ArrayAdapter(
+                    requireContext(),
+                    android.R.layout.simple_spinner_item,
+                    categoryNames
+                )
                 binding.spinnerCategory.adapter = categoryAdapter
             }
         }
@@ -69,33 +73,43 @@ class OperationFragment : BottomSheetDialogFragment() {
                 // Обновление адаптера Spinner с данными из cardList
                 val cardNumbers = cards.map { it.cardNumber }
                 Log.d("OperationFragment", cardNumbers.toString())
-                val cardAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, cardNumbers)
+                val cardAdapter = ArrayAdapter(
+                    requireContext(),
+                    android.R.layout.simple_spinner_item,
+                    cardNumbers
+                )
                 binding.spinnerCard.adapter = cardAdapter
             }
         }
 
         buttonSave.setOnClickListener {
             lifecycleScope.launch {
-                val category = homeViewModel.findCategoryId(binding.spinnerCategory.selectedItem.toString())
+                val category =
+                    homeViewModel.findCategoryId(binding.spinnerCategory.selectedItem.toString())
                 val card = homeViewModel.findCardId(binding.spinnerCard.selectedItem.toString())
                 val date = pickDateWithTime(editTextDate.text.toString())
+                val monthYear = pickMonthYear(date)
                 val flag = getRadioButtonFlag()
-                homeViewModel.insertOperation(
+                homeViewModel.insertOperationAndMcsOrSkip(
                     binding.editTextSum.text.toString(),
                     date,
+                    monthYear,
                     flag,
                     binding.editTextComment.text.toString(),
                     card,
                     category
                 )
+                Toast.makeText(requireContext(), "Данные успешно сохранены", Toast.LENGTH_SHORT)
+                    .show()
             }
-        }
 
+        }
         editTextDate.setOnClickListener {
             showDatePickerDialog()
         }
     }
-    private fun getRadioButtonFlag():Boolean {
+
+    private fun getRadioButtonFlag(): Boolean {
         val radioGroup = binding.radioGroupType
         val radioButtonFlag = when (radioGroup.checkedRadioButtonId) {
             R.id.radioButtonIncome -> true
@@ -104,6 +118,12 @@ class OperationFragment : BottomSheetDialogFragment() {
         }
         return radioButtonFlag
     }
+
+    private fun pickMonthYear(date: Long): Long {
+        val newDate = homeViewModel.converter.convertMcsFromLong(date)
+        return homeViewModel.converter.convertMcsToLong(newDate)
+    }
+
     private fun pickDateWithTime(date: String): Long {
         val currentTime = Calendar.getInstance()
         val hour = currentTime.get(Calendar.HOUR_OF_DAY)

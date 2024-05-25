@@ -3,6 +3,7 @@ package com.example.myfinapp.ui.home
 import android.content.Context
 import android.net.Uri
 import android.util.Log
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myfinapp.Repository
@@ -35,11 +36,33 @@ class HomeViewModel(private val repository: Repository, val converter: DateConve
     val categoryList = _categoryList.asStateFlow()
     private val _cardList = MutableStateFlow(emptyList<CardEntity>())
     val cardList = _cardList.asStateFlow()
+    private val _selectedCategory = MutableStateFlow("Все")
+    val selectedCategory = _selectedCategory.asStateFlow()
+
+    private val _selectedCard = MutableStateFlow("Все")
+    val selectedCard = _selectedCard.asStateFlow()
+
+    private val _selectedIncome = MutableStateFlow<Boolean?>(null)
+    val selectedIncome = _selectedIncome.asStateFlow()
 
     init {
         getOperations()
         getCards()
         getCategories()
+    }
+    fun updateSelectedCategory(category: String) {
+        Log.d("Category", category)
+        _selectedCategory.update { category }
+    }
+
+    fun updateSelectedCard(card: String) {
+        Log.d("Card", card)
+        _selectedCard.update { card }
+    }
+
+    fun updateSelectedIncome(income: Boolean?) {
+        Log.d("Income", income.toString())
+        _selectedIncome.update { income }
     }
 
     private fun getOperations() {
@@ -54,13 +77,13 @@ class HomeViewModel(private val repository: Repository, val converter: DateConve
                     Log.d("Group", "Start update")
 
                     _operationsList.update { operationGroups }
-                    _operationsList.value.size
                     Log.d("Group", "End update")
                     Log.d("Operations", operationsList.value.toString())
                     Log.d("Category", categoryList.value.toString())
                 }
         }
     }
+
     private fun getCards() {
         viewModelScope.launch {
             repository.getAllCards().flowOn(Dispatchers.IO)
@@ -70,6 +93,7 @@ class HomeViewModel(private val repository: Repository, val converter: DateConve
                 }
         }
     }
+
     private fun getCategories() {
         viewModelScope.launch {
             repository.getAllCategories().flowOn(Dispatchers.IO)
@@ -160,7 +184,7 @@ class HomeViewModel(private val repository: Repository, val converter: DateConve
         }
     }
 
-   suspend fun findCardId(cardNumber: String): Long {
+    suspend fun findCardId(cardNumber: String): Long {
         return suspendCoroutine { continuation ->
             viewModelScope.launch {
                 var cardId = repository.findCardByCardNumber(cardNumber)
@@ -184,7 +208,7 @@ class HomeViewModel(private val repository: Repository, val converter: DateConve
         }
     }
 
-    private fun insertOperationAndMcsOrSkip(
+    fun insertOperationAndMcsOrSkip(
         sum: String,
         date: Long,
         monthYear: Long,
@@ -326,9 +350,11 @@ class HomeViewModel(private val repository: Repository, val converter: DateConve
         }
         return "" // Если не нашли номер карты, то возвращаем пустую строку
     }
+
     override fun onCleared() {
-        Log.d("HomeViewModel", "onCleared")
+        Log.d("HomeViewModel", selectedIncome.value.toString())
         super.onCleared()
+        Log.d("HomeViewModel", selectedIncome.value.toString())
     }
 
 }
