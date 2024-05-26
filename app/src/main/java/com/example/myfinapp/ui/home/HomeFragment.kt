@@ -98,7 +98,8 @@ class HomeFragment : Fragment() {
                     operationGroups,
                     categoryNames,
                     cardNames,
-                    income)
+                    income
+                )
 
                 for (operationGroup in filteredOperationGroups) {
                     val operationGroupItem = OperationGroupItem(operationGroup)
@@ -200,6 +201,7 @@ class HomeFragment : Fragment() {
             filterFragment.show(parentFragmentManager, "FilterFragment")
         }
     }
+
     private fun filterOperationGroups(
         operationGroups: List<OperationGroup>,
         categoryName: String,

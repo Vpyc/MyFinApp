@@ -30,7 +30,7 @@ class OperationViewItem(private val operationItem: OperationItem) :
         binding.textViewOperationCategory.text = operationItem.categoryName
         binding.textViewOperationCard.text = operationItem.cardNumber
         val formattedSum = "${operationItem.sum.toString().replace(",", ".")} ₽"
-        binding.textViewOperationSum.apply{
+        binding.textViewOperationSum.apply {
             text = formattedSum
             setTextColor(if (operationItem.income) Color.GREEN else Color.RED)
             text = if (operationItem.income) {

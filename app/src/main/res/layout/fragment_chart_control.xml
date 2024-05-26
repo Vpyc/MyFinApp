@@ -6,14 +6,62 @@
     android:layout_height="match_parent"
     tools:context=".ui.chart.ChartControlFragment">
 
+    <Spinner
+        android:id="@+id/chart_type_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:entries="@array/chart_types"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/data_type_radio_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chart_type_spinner">
+
+        <RadioButton
+            android:id="@+id/expense_radio_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="@string/expense" />
+
+        <RadioButton
+            android:id="@+id/income_radio_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/income" />
+
+    </RadioGroup>
+
+    <EditText
+        android:id="@+id/month_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:clickable="true"
+        android:focusable="false"
+        android:hint="Выбрать дату"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/data_type_radio_group" />
+
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/chart_fragment"
         android:name="com.example.myfinapp.ui.chart.ChartFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/month_picker"
         tools:layout="@layout/fragment_chart" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

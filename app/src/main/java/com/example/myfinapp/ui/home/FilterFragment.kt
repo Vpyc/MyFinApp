@@ -2,7 +2,6 @@ package com.example.myfinapp.ui.home
 
 import android.R
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.myfinapp.databinding.DialogFilterBinding
 import kotlinx.coroutines.launch
 
-class FilterFragment: DialogFragment() {
+class FilterFragment : DialogFragment() {
     private lateinit var homeViewModel: HomeViewModel
     private var _binding: DialogFilterBinding? = null
     private val binding get() = _binding!!
@@ -73,8 +72,12 @@ class FilterFragment: DialogFragment() {
             dismiss()
         }
     }
+
     override fun onStart() {
         super.onStart()
-        dialog?.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        dialog?.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
     }
 }

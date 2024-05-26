@@ -3,7 +3,6 @@ package com.example.myfinapp.ui.home
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myfinapp.Repository
@@ -50,6 +49,7 @@ class HomeViewModel(private val repository: Repository, val converter: DateConve
         getCards()
         getCategories()
     }
+
     fun updateSelectedCategory(category: String) {
         Log.d("Category", category)
         _selectedCategory.update { category }
