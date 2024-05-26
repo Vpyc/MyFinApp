@@ -1,6 +1,5 @@
 package com.example.myfinapp.ui.home
 
-import android.graphics.Color
 import android.view.View
 import com.example.myfinapp.R
 import com.example.myfinapp.databinding.ItemOperationBinding
@@ -32,7 +31,11 @@ class OperationViewItem(private val operationItem: OperationItem) :
         val formattedSum = "${operationItem.sum.toString().replace(",", ".")} ₽"
         binding.textViewOperationSum.apply {
             text = formattedSum
-            setTextColor(if (operationItem.income) Color.GREEN else Color.RED)
+            setTextColor(
+                if (operationItem.income) resources.getColor(R.color.green) else resources.getColor(
+                    R.color.red
+                )
+            )
             text = if (operationItem.income) {
                 "+ $text"
             } else {

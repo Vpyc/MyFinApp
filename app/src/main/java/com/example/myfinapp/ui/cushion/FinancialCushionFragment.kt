@@ -1,11 +1,10 @@
-package com.example.myfinapp.ui.chart
+package com.example.myfinapp.ui.cushion
 
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,10 +17,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.Fragment
@@ -32,57 +32,34 @@ import co.yml.charts.ui.piechart.charts.DonutPieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
 import com.example.myfinapp.R
-import com.example.myfinapp.databinding.FragmentDonutChartBinding
-import com.example.myfinapp.room.McsItem
-import kotlin.random.Random
+import com.example.myfinapp.databinding.FragmentFinancialCushionBinding
 
-class DonutChartFragment : Fragment() {
-    private var _binding: FragmentDonutChartBinding? = null
+class FinancialCushionFragment : Fragment() {
+    private var _binding: FragmentFinancialCushionBinding? = null
     private val binding get() = _binding!!
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentDonutChartBinding.inflate(inflater, container, false)
+        _binding = FragmentFinancialCushionBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Получите список McsItem из аргументов фрагмента
-        val mcs = arguments?.getParcelableArrayList<McsItem>("mcs")
-
-        val composeView = view.findViewById<ComposeView>(R.id.donut_chart)
+        val composeView = binding.donutChart
         composeView.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                if (!mcs.isNullOrEmpty()) {
-                    CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.background, // Используем цвет фона из текущей темы
-                        ) {
-                            val data = filterAndPrepareDonutChartData(mcs, "05.2024")
-                            if (data.isNotEmpty()) {
-                                DonutChart(data)
-                            }
-                        }
+                CompositionLocalProvider(LocalContentColor provides MaterialTheme.colorScheme.onBackground) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.background, // Используем цвет фона из текущей темы
+                    ) {
+                        DonutChart()
                     }
                 }
             }
-        }
-    }
-
-    private fun filterAndPrepareDonutChartData(
-        mcs: List<McsItem>,
-        month: String
-    ): List<PieChartData.Slice> {
-        val filteredData = mcs.filter { it.formattedDate == month && it.minus > 0 }
-
-        return filteredData.map { item ->
-            val value = item.minus
-            PieChartData.Slice(item.categoryName ?: "", value.toFloat(), getRandomColor())
         }
     }
 
@@ -91,15 +68,29 @@ class DonutChartFragment : Fragment() {
         _binding = null
     }
 
+    @Preview
     @Composable
-    fun DonutChart(data: List<PieChartData.Slice>) {
-        val donutChartData = PieChartData(slices = data, plotType = PlotType.Donut)
+    fun DonutChart() {
+        val donutChartData = PieChartData(
+            slices = listOf(
+                PieChartData.Slice(
+                    value = 7818.58f,
+                    color = colorResource(id = R.color.green),
+                    label = "Остаток"
+                ),
+                PieChartData.Slice(
+                    value = 382.99f,
+                    color = colorResource(id = R.color.red),
+                    label = "Расходы за месяц"
+                ),
+            ), plotType = PlotType.Donut
+        )
 
         val donutChartConfig = PieChartConfig(
             showSliceLabels = true,
             sliceLabelTextColor = Color.Black,
             sliceLabelTextSize = 28.sp,
-            labelType = PieChartConfig.LabelType.VALUE,
+            labelType = PieChartConfig.LabelType.PERCENTAGE,
             isEllipsizeEnabled = true,
             sliceLabelEllipsizeAt = TextUtils.TruncateAt.MIDDLE,
             chartPadding = 10,
@@ -114,7 +105,7 @@ class DonutChartFragment : Fragment() {
             Legends(
                 legendsConfig = DataUtils.getLegendsConfigFromPieChartData(
                     donutChartData,
-                    3
+                    2
                 ).copy(
                     textStyle = TextStyle(
                         fontSize = 16.sp, // Размер шрифта
@@ -132,17 +123,7 @@ class DonutChartFragment : Fragment() {
                     donutChartData,
                     donutChartConfig
                 )
-                { slice ->
-                    Toast.makeText(context, slice.label, Toast.LENGTH_SHORT).show()
-                }
             }
         }
-
-
-    }
-
-    private fun getRandomColor(): Color {
-        val rnd = Random.Default
-        return Color(rnd.nextInt(255), rnd.nextInt(255), rnd.nextInt(255))
     }
 }

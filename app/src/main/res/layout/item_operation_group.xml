@@ -11,6 +11,7 @@
         android:layout_gravity="start"
         android:padding="8dp"
         android:text="01.01.2023"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textStyle="bold" />
 
 </LinearLayout>

@@ -24,14 +24,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
-                android:text="Фильтры" />
+                android:text="Фильтр"
+                app:icon="@drawable/ic_filter" />
 
             <Button
                 android:id="@+id/uploadPdf"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
-                android:text="Загрузить файл" />
+                android:text="Загрузить файл"
+                app:icon="@drawable/ic_upload"
+                app:iconTintMode="src_in" />
 
         </LinearLayout>
 
@@ -49,6 +52,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
+        android:backgroundTint="@color/greenButton"
         android:contentDescription="Добавить операцию"
         android:src="@drawable/ic_add"
         app:layout_anchor="@id/recyclerView"

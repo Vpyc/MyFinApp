@@ -32,7 +32,6 @@ class ChartFragment : Fragment() {
     private var _binding: FragmentChartBinding? = null
     private val binding get() = _binding!!
 
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -62,7 +61,6 @@ class ChartFragment : Fragment() {
             }
         }
     }
-
 
     @Composable
     fun McsBarChart(mcs: ArrayList<McsItem>, category: String) {
@@ -136,11 +134,12 @@ class ChartFragment : Fragment() {
             val dateItems = mcs.filter { it.formattedDate.orEmpty() == date }
 
             val totalPlus = dateItems.sumOf { it.plus }.toFloat()
+            val color = Color(resources.getColor(R.color.green))
 
             incomeData.add(
                 BarData(
                     point = Point(index.toFloat(), totalPlus),
-                    color = Color.Green,
+                    color = color,
                     dataCategoryOptions = DataCategoryOptions(),
                     label = date
                 )
@@ -158,11 +157,12 @@ class ChartFragment : Fragment() {
             val dateItems = mcs.filter { it.formattedDate.orEmpty() == date }
 
             val totalMinus = dateItems.sumOf { it.minus }.toFloat()
+            val color = Color(resources.getColor(R.color.red))
 
             expenseData.add(
                 BarData(
                     point = Point(index.toFloat(), totalMinus),
-                    color = Color.Red,
+                    color = color,
                     dataCategoryOptions = DataCategoryOptions(),
                     label = date
                 )

@@ -9,10 +9,9 @@
     <Spinner
         android:id="@+id/chart_type_spinner"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:entries="@array/chart_types"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <RadioGroup
@@ -49,6 +48,7 @@
         android:clickable="true"
         android:focusable="false"
         android:hint="Выбрать дату"
+        android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/data_type_radio_group" />
@@ -62,6 +62,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/month_picker"
+        app:layout_constraintVertical_bias="0.3"
         tools:layout="@layout/fragment_chart" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -22,4 +22,9 @@
         android:name="com.example.myfinapp.ui.notifications.NotificationsFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_notifications" />
+    <fragment
+        android:id="@+id/navigation_financial_cushion"
+        android:name="com.example.myfinapp.ui.cushion.FinancialCushionFragment"
+        android:label="Подушка"
+        tools:layout="@layout/fragment_financial_cushion" />
 </navigation>

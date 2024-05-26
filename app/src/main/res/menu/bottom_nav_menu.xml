@@ -2,18 +2,22 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/navigation_financial_cushion"
+        android:icon="@drawable/ic_currency_ruble"
+        android:title="Подушка" />
+    <item
         android:id="@+id/navigation_home"
         android:icon="@drawable/ic_home_black_24dp"
         android:title="@string/title_home" />
 
     <item
         android:id="@+id/navigation_chart"
-        android:icon="@drawable/ic_dashboard_black_24dp"
+        android:icon="@drawable/ic_charts"
         android:title="@string/title_dashboard" />
 
     <item
         android:id="@+id/navigation_notifications"
-        android:icon="@drawable/ic_notifications_black_24dp"
+        android:icon="@drawable/ic_others"
         android:title="@string/title_notifications" />
 
 </menu>

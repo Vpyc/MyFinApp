@@ -49,6 +49,7 @@ class ChartControlFragment : Fragment() {
         binding.monthPicker.setOnClickListener {
             showDatePickerDialog()
         }
+
     }
 
     private fun showDatePickerDialog() {
