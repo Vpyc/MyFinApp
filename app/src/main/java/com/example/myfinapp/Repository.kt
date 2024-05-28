@@ -46,6 +46,8 @@ class Repository(
 
     suspend fun insertOperation(operation: OperationEntity) =
         operationDao.insertOperation(operation)
+    suspend fun deleteOperation(operationId: Long)  = operationDao.deleteOperation(operationId)
+    suspend fun updateOperation(operation: OperationEntity)  = operationDao.updateOperation(operation)
 
     fun getAllOperationsSortedByDate() = operationDao.getAllOperationsSortedByDate()
     fun getAllOperationsWithFormattedData() = operationDao.getAllOperationsWithFormattedData()

@@ -1,6 +1,7 @@
 package com.example.myfinapp.room
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -54,6 +55,10 @@ interface OperationDao {
 
     @Query("SELECT * FROM OperationItem")
     fun getAllOperationsWithFormattedData(): Flow<List<OperationItem>>
+    @Delete(entity = OperationEntity::class)
+    suspend fun deleteOperation(operationID: Long)
+    @Update(entity = OperationEntity::class)
+    suspend fun updateOperation(operation: OperationEntity)
 }
 
 @Dao

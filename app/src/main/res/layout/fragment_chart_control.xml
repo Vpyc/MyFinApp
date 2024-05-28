@@ -50,6 +50,7 @@
         android:hint="Выбрать дату"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/data_type_radio_group" />
 
