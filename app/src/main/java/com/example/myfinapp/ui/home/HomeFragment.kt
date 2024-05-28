@@ -86,6 +86,7 @@ class HomeFragment : Fragment() {
                 if (scrollDistance > 50) scrollDistance = 0
             }
         })
+
         val groupAdapter = GroupAdapter<GroupieViewHolder>()
         lifecycleScope.launch {
             homeViewModel.operationsList.collect { operationGroups ->

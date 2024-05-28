@@ -104,7 +104,7 @@ class HomeViewModel(private val repository: Repository, val converter: DateConve
         }
     }
 
-    private suspend fun insertCard(cardNumber: String): Long {
+    suspend fun insertCard(cardNumber: String): Long {
         return suspendCoroutine { continuation ->
             viewModelScope.launch(Dispatchers.IO) {
                 val card = CardEntity(
@@ -126,7 +126,7 @@ class HomeViewModel(private val repository: Repository, val converter: DateConve
         }
     }
 
-    fun insertOperation(
+    private fun insertOperation(
         sum: String,
         date: Long,
         income: Boolean,
