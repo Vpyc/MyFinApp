@@ -55,10 +55,6 @@ interface OperationDao {
 
     @Query("SELECT * FROM OperationItem")
     fun getAllOperationsWithFormattedData(): Flow<List<OperationItem>>
-    @Delete(entity = OperationEntity::class)
-    suspend fun deleteOperation(operationID: Long)
-    @Update(entity = OperationEntity::class)
-    suspend fun updateOperation(operation: OperationEntity)
 }
 
 @Dao
